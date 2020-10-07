@@ -107,7 +107,7 @@ namespace _5HeadBot.Modules
             {
                 var embed = new EmbedBuilder();
 
-                embed.WithTitle(string.Join(" or ", group.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : name)));
+                embed.WithTitle(string.Join(" or ", group.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : name).Reverse()));
                 foreach (var command in group)
                 {
                     var fields = new List<EmbedFieldBuilder>();
