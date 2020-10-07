@@ -49,7 +49,7 @@ namespace _5HeadBot.Modules
             => ReplyAsync("Nothing to see here!");
 
         // Search for something
-        [Command("Search")]
+        [Command("Search", RunMode = RunMode.Async)]
         [Summary("Searches for an ansver in the internet")]
         [Alias("google", "find", "гугл", "поиск", "найди")]
         public async Task SearchIt(params string[] query) 
@@ -101,30 +101,43 @@ namespace _5HeadBot.Modules
         [Alias("команды")]
         public Task Help()
         {
-            var embed = new EmbedBuilder()
+            var groups = Commands.Modules.GroupBy((module) => module.Aliases);
+            var messages = new List<Embed>();
+            foreach(var group in groups)
             {
-                Title = "List of avaliable commands:",
-            };
-            var fields = new List<EmbedFieldBuilder>();
-            foreach(var c in Commands.Commands)
-            {
-                var names = $"{string.Join(", ", c.Aliases)}";
-                var arguments = $"{string.Join(", ", c.Parameters.Select((item) => !item.IsOptional ? item.ToString() : $"[{item}={(item.DefaultValue != null ? item.DefaultValue.ToString() : "null")}]"))}";
+                var embed = new EmbedBuilder();
 
-                var fieldBuilder = new EmbedFieldBuilder();
-                if (arguments.Count() > 0)
+                embed.WithTitle(string.Join(" or ", group.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : name)));
+                foreach (var command in group)
                 {
-                    fieldBuilder.Name = names;
-                    fieldBuilder.Value = "Args: " + arguments;
+                    var fields = new List<EmbedFieldBuilder>();
+                    foreach (var c in command.Commands)
+                    {
+                        var names = $"{string.Join(", ", c.Name)}";
+                        var arguments = $"{string.Join(", ", c.Parameters.Select((item) => !item.IsOptional ? item.ToString() : $"[{item}={(item.DefaultValue != null ? item.DefaultValue.ToString() : "null")}]"))}";
+
+                        var fieldBuilder = new EmbedFieldBuilder();
+                        if (arguments.Count() > 0)
+                        {
+                            fieldBuilder.Name = names;
+                            fieldBuilder.Value = arguments;
+                        }
+                        else
+                        {
+                            fieldBuilder.Name = names;
+                            fieldBuilder.Value = '\u200B';
+                        }
+                        fields.Add(fieldBuilder);
+                    }
+                    embed.WithFields(fields);
                 }
-                else
-                {
-                    fieldBuilder.Name = names;
-                    fieldBuilder.Value = '\u200B';
-                }
-                fields.Add(fieldBuilder);
+                messages.Add(embed.Build());
             }
-            return ReplyAsync(embed: embed.WithFields(fields).Build());
+            foreach (var mess in messages)
+            {
+                ReplyAsync(embed: mess);
+            }
+            return Task.CompletedTask;
         }
     }
 }

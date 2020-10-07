@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules
 {
+    [Group("User")]
+    [Alias("")]
     public class UserModule : ModuleBase<SocketCommandContext>
     {
 

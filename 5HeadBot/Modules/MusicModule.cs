@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules
 {
+    [Group("Music")]
+    [Alias("Mus", "M")]
+    [RequireBotPermission(GuildPermission.Connect, ErrorMessage = "Bot should have permission to connect to a voice channel.")]
+    [RequireBotPermission(GuildPermission.Speak, ErrorMessage = "Bot should have permission to speak.")]
     public class MusicModule : ModuleBase<SocketCommandContext>
     {
         public MusicService MusicService { get; set; }
@@ -24,6 +28,7 @@ namespace _5HeadBot.Modules
             await Leave();
             await MusicService.JoinAsync(channel);
         }
+
         [Command("Leave")]
         public async Task Leave()
         {
@@ -36,7 +41,8 @@ namespace _5HeadBot.Modules
 
             await MusicService.LeaveAsync(channel);
         }
-        [Command("play")]
+
+        [Command("Play")]
         public async Task Play([Remainder] string query)
         {
             await ReplyAsync(await MusicService.PlayAsync(query, Context.Guild));

@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules
 {
+    [Group("Istu")]
+    [Alias("")]
     public class IstuModule : ModuleBase<SocketCommandContext>
     {
         public IstuService Istu { get; set; }
