@@ -1,7 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,8 +39,14 @@ namespace _5HeadBot.Modules
                 await ReplyAsync("No. :rage: ");
             else
             {
+                var reasonProved = !string.IsNullOrEmpty(reason) && !string.IsNullOrWhiteSpace(reason);
+                try
+                {
+                    await user.SendMessageAsync($"You have been banned on a server {Context.Guild.Name}. {(reasonProved ? $"Reason: {reason}" : "")}");
+                }
+                catch { }
                 await user.Guild.AddBanAsync(user, reason: reason);
-                await ReplyAsync("ok!");
+                await ReplyAsync($"User {user} has been successfully banned {(reasonProved ? $"for a reason: {reason}" : ".")}");
             }
         }
 
@@ -54,23 +62,28 @@ namespace _5HeadBot.Modules
         [RequireBotPermission(
             GuildPermission.BanMembers, 
             ErrorMessage = "Bot executing this command must be able to ban")]
-        public async Task UnBanUserAsync(IGuildUser user)
+        public async Task UnbanUserAsync(string uName)
         {
-            IBan ban = null;
-            try
+            var name = uName.ToLower();
+            var bans = await Context.Guild.GetBansAsync();
+            var ban = bans.Where((ban) => ban.User.Username.ToLower() == name)?.FirstOrDefault();
+            if(ban != null)
             {
-                ban = await user.Guild.GetBanAsync(user);
-            }
-            catch { }
-            if (ban != null)
-            {
-                await user.Guild.RemoveBanAsync(user);
-                await ReplyAsync($"Sucsessfuly unbanned {user}");
+                await Context.Guild.RemoveBanAsync(ban.User);
+                await ReplyAsync($"Successfully unbanned {ban.User}! Now you can invite him via link: {(await Context.Guild.GetInvitesAsync()).FirstOrDefault().Url}");
             }
             else
             {
-                await ReplyAsync($"User {user} is not banned.\nWhy to unban him? :thinking:");
+                await ReplyAsync($"User {name} is not banned.\nWhy to unban him? :thinking:");
             }
+        }
+
+        // Sends direct message to a user
+        [Command("dm")]
+        public async Task DmUser(IUser user = null, string message = "?")
+        {
+            user = user ?? Context.User;
+            await user.SendMessageAsync(message);
         }
     }
 }

@@ -66,7 +66,10 @@ namespace _5HeadBot.Services
                 return;
 
             // the command failed, let's notify the user that something happened.
-            await context.Channel.SendMessageAsync($"error: {result}");
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithColor(Color.Red);
+            embed.WithTitle($"Error: {result.ErrorReason}");
+            await context.Channel.SendMessageAsync(embed: embed.Build());
         }
     }
 }
