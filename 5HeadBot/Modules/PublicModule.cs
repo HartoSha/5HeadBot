@@ -107,14 +107,14 @@ namespace _5HeadBot.Modules
             {
                 var embed = new EmbedBuilder();
 
-                embed.WithTitle(string.Join(" or ", group.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : name).Reverse()));
+                embed.WithTitle(string.Join(" or ", group.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : $"`{name}`").Reverse()));
                 foreach (var command in group)
                 {
                     var fields = new List<EmbedFieldBuilder>();
                     foreach (var c in command.Commands)
                     {
-                        var names = $"{string.Join(", ", c.Name)}";
-                        var arguments = $"{string.Join(", ", c.Parameters.Select((item) => !item.IsOptional ? item.ToString() : $"[{item}={(item.DefaultValue != null ? item.DefaultValue.ToString() : "null")}]"))}";
+                        var names = $"{string.Join(", ", $"`{c.Name}`")}{(string.IsNullOrEmpty(c.Summary) ? "" : $" - {c.Summary}")}";
+                        var arguments = string.Join(", ", c.Parameters.Select(item => !item.IsOptional ? $"***{item}***" : $"[***{item}***={(item.DefaultValue ?? "")}]"));
 
                         var fieldBuilder = new EmbedFieldBuilder();
                         if (arguments.Count() > 0)
