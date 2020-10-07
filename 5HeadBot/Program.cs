@@ -47,7 +47,10 @@ namespace _5HeadBot
 
             // maybe move logic of if-esle below to InitializeAsync() of ConfigService?
             await services.GetRequiredService<ConfigService>().
-                InitializeAsync(configJsonPath: "config.json");
+                InitializeAsync(
+                    configJsonPath: "config.json", 
+                    searchDepth: 10
+                );
 
             var config = services.GetRequiredService<ConfigService>().Config;
 
