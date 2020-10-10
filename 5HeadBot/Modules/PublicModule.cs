@@ -101,38 +101,42 @@ namespace _5HeadBot.Modules
         [Alias("команды")]
         public Task Help()
         {
-            var groups = Commands.Modules.GroupBy((module) => module.Aliases);
+            var g2 = Commands.Modules.SelectMany(m => m.Commands).GroupBy(c => c.Module.Aliases);
+            var groups = Commands.Modules.GroupBy((module) => module.Commands.SelectMany(c => c.Aliases));
             var messages = new List<Embed>();
-            foreach(var group in groups)
+
+            foreach (var g in g2)
             {
                 var embed = new EmbedBuilder();
+                embed.WithTitle(string.Join(" or ", g.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : $"`{name}`").Reverse()));
 
-                embed.WithTitle(string.Join(" or ", group.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : $"`{name}`").Reverse()));
-                foreach (var command in group)
+                var fields = new List<EmbedFieldBuilder>();
+                foreach (var c in g)
                 {
-                    var fields = new List<EmbedFieldBuilder>();
-                    foreach (var c in command.Commands)
-                    {
-                        var names = $"{string.Join(", ", $"`{c.Name}`")}{(string.IsNullOrEmpty(c.Summary) ? "" : $" - {c.Summary}")}";
-                        var arguments = string.Join(", ", c.Parameters.Select(item => !item.IsOptional ? $"***{item}***" : $"[***{item}***={(item.DefaultValue ?? "")}]"));
+                    // create a set of command names and prefixes, remove prefixes
+                    // создаем множество с названиями и префиксами текущей команды, удаляем из него префиксы
+                    var alliasesWithoutGroupPrefixes =
+                                    c.Aliases != null && c.Aliases.Count > 0
+                                    ? c.Aliases.SelectMany(a => a.Split(" ")).ToHashSet().Where(el => el.ToLower().Equals(c.Name.ToLower()) || !g.Key.Select(e => e.ToLower()).Contains(el.ToLower()))
+                                    : c.Aliases.ToHashSet();
 
-                        var fieldBuilder = new EmbedFieldBuilder();
-                        if (arguments.Count() > 0)
-                        {
-                            fieldBuilder.Name = names;
-                            fieldBuilder.Value = arguments;
-                        }
-                        else
-                        {
-                            fieldBuilder.Name = names;
-                            fieldBuilder.Value = '\u200B';
-                        }
-                        fields.Add(fieldBuilder);
-                    }
-                    embed.WithFields(fields);
+                    var styledAlliases = alliasesWithoutGroupPrefixes.Select(a => $"`{a}`");
+                    var commandNames = $"{string.Join(", ", styledAlliases)}{(string.IsNullOrEmpty(c.Summary) ? "" : $" - {c.Summary}")}";
+
+                    var commandArgs = string.Join(", ", c.Parameters.Select(arg => !arg.IsOptional ? $"***{arg}***" : $"[***{arg}***={(arg.DefaultValue ?? "")}]"));
+
+                    var fieldBuilder = new EmbedFieldBuilder
+                    {
+                        Name = commandNames,
+                        Value = commandArgs.Length > 0 ? commandArgs : "\u200B"
+                    };
+                    fields.Add(fieldBuilder);
                 }
+
+                embed.WithFields(fields);
                 messages.Add(embed.Build());
             }
+
             foreach (var mess in messages)
             {
                 ReplyAsync(embed: mess);
