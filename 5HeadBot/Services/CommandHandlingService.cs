@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace _5HeadBot.Services
 {
@@ -50,16 +51,21 @@ namespace _5HeadBot.Services
             // Perform the execution of the command. In this method,
             // the command service will perform precondition and parsing check
             // then execute the command if one is matched.
-            await _commands.ExecuteAsync(context, argPos, _services); 
+            await _commands.ExecuteAsync(context, argPos, _services);
             // Note that normally a result will be returned by this format, but here
             // we will handle the result in CommandExecutedAsync,
         }
-
         public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
-            // command is unspecified when there was a search failure (command not found); we don't care about these errors
+            // command is unspecified when there was a search failure (command not found); let user know about this
             if (!command.IsSpecified)
+            {
+                EmbedBuilder e = new EmbedBuilder();
+                e.WithColor(Color.Orange);
+                e.WithTitle($"Command not found. You can use command `help` to get a list of all avaliable commands.");
+                await context.Channel.SendMessageAsync(embed: e.Build());
                 return;
+            }    
 
             // the command was successful, we don't care about this result, unless we want to log that a command succeeded.
             if (result.IsSuccess)

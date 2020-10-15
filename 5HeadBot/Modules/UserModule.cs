@@ -29,11 +29,11 @@ namespace _5HeadBot.Modules
         [RequireContext(ContextType.Guild)]
         // make sure the user invoking the command can ban
         [RequireUserPermission(
-            GuildPermission.BanMembers, 
+            GuildPermission.BanMembers,
             ErrorMessage = "User executing this command must be able to ban")]
         // make sure the bot itself can ban
         [RequireBotPermission(
-            GuildPermission.BanMembers, 
+            GuildPermission.BanMembers,
             ErrorMessage = "Bot executing this command must be able to ban")]
         public async Task BanUserAsync(IGuildUser user, [Remainder] string reason = null)
         {
@@ -58,18 +58,18 @@ namespace _5HeadBot.Modules
         [RequireContext(ContextType.Guild)]
         // make sure the user invoking the command can ban
         [RequireUserPermission(
-            GuildPermission.BanMembers, 
+            GuildPermission.BanMembers,
             ErrorMessage = "User executing this command must be able to ban")]
         // make sure the bot itself can ban
         [RequireBotPermission(
-            GuildPermission.BanMembers, 
+            GuildPermission.BanMembers,
             ErrorMessage = "Bot executing this command must be able to ban")]
         public async Task UnbanUserAsync(string uName)
         {
             var name = uName.ToLower();
             var bans = await Context.Guild.GetBansAsync();
             var ban = bans.Where((ban) => ban.User.Username.ToLower() == name)?.FirstOrDefault();
-            if(ban != null)
+            if (ban != null)
             {
                 await Context.Guild.RemoveBanAsync(ban.User);
                 await ReplyAsync($"Successfully unbanned {ban.User}! Now you can invite him via link: {(await Context.Guild.GetInvitesAsync()).FirstOrDefault().Url}");
@@ -82,7 +82,7 @@ namespace _5HeadBot.Modules
 
         // Sends direct message to a user
         [Command("dm")]
-        public async Task DmUser(IUser user = null, string message = "?")
+        public async Task DmUser(IUser user = null, [Remainder] string message = "?")
         {
             user = user ?? Context.User;
             await user.SendMessageAsync(message);

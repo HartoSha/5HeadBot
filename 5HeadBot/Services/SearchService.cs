@@ -57,7 +57,6 @@ namespace _5HeadBot.Services
                     [JsonProperty("cse_imgae")]
                     public List<Image> SetImages { set { if (Images.Count < 0) this.Images = value; } }
 
-                    [Serializable]
                     public class Image
                     {
                         [JsonProperty("src")]

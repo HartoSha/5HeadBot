@@ -5,6 +5,7 @@ using Discord.Commands;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules
@@ -108,7 +109,11 @@ namespace _5HeadBot.Modules
             foreach (var g in g2)
             {
                 var embed = new EmbedBuilder();
-                embed.WithTitle(string.Join(" or ", g.Key.Select(name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : $"`{name}`").Reverse()));
+                embed.WithTitle(
+                    string.Join(" or ", g.Key.Select(
+                        name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : $"`{name}`"
+                    ).Reverse()
+                ));
 
                 var fields = new List<EmbedFieldBuilder>();
                 foreach (var c in g)
