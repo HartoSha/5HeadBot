@@ -61,6 +61,7 @@ namespace _5HeadBot
 
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
                 await services.GetRequiredService<MusicService>().InitializeAsync();
+                await services.GetRequiredService<BrowserService>().InitializeAsync();
 
                 await Task.Delay(Timeout.Infinite);
             }
@@ -90,6 +91,7 @@ namespace _5HeadBot
                 .AddSingleton<ICatImageProvider, TheCatApi>()
                 .AddSingleton<SearchService>()
                 .AddSingleton<RNGService>()
+                .AddSingleton<BrowserService>()
                 .AddSingleton<IstuService>()
                 .AddSingleton<LavaConfig>()
                 .AddLavaNode(x => {
