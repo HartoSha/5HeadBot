@@ -1,11 +1,12 @@
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+using _5HeadBot.Services.BotMessageService;
+using _5HeadBot.Services.BotMessageService.Data;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace _5HeadBot.Services
 {
@@ -13,12 +14,15 @@ namespace _5HeadBot.Services
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
+        private readonly BotMessageBuilder _messageBuilder;
+        private readonly BotMessageSender _messageSender;
         private readonly IServiceProvider _services;
-
         public CommandHandlingService(IServiceProvider services)
         {
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
+            _messageBuilder = services.GetRequiredService<BotMessageBuilder>();
+            _messageSender = services.GetRequiredService<BotMessageSender>();
             _services = services;
 
             // Hook CommandExecuted to handle post-command-execution logic.
@@ -60,10 +64,13 @@ namespace _5HeadBot.Services
             // command is unspecified when there was a search failure (command not found); let user know about this
             if (!command.IsSpecified)
             {
-                EmbedBuilder e = new EmbedBuilder();
-                e.WithColor(Color.Orange);
-                e.WithTitle($"Command not found. You can use command `help` to get a list of all avaliable commands.");
-                await context.Channel.SendMessageAsync(embed: e.Build());
+                await _messageSender.SendMessageAsync(
+                    _messageBuilder.
+                        WithDisplayType(BotMessageStyle.Warning).
+                        WithEmbedWithTitle($"Command not found. You can use `help` command to get a list of all avaliable commands.")
+                        .Build(),
+                    context
+                );
                 return;
             }    
 
@@ -72,10 +79,13 @@ namespace _5HeadBot.Services
                 return;
 
             // the command failed, let's notify the user that something happened.
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithColor(Color.Red);
-            embed.WithTitle($"Error: {result.ErrorReason}");
-            await context.Channel.SendMessageAsync(embed: embed.Build());
+            await _messageSender.SendMessageAsync(
+                _messageBuilder.
+                    WithDisplayType(BotMessageStyle.Error).
+                    WithEmbedWithTitle(result.ErrorReason)
+                    .Build(),
+                context
+            );
         }
     }
 }

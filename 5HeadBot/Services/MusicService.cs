@@ -1,5 +1,8 @@
-﻿using Discord;
+﻿using _5HeadBot.Services.BotMessageService;
+using _5HeadBot.Services.BotMessageService.Data;
+using Discord;
 using Discord.WebSocket;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Victoria;
@@ -10,54 +13,71 @@ namespace _5HeadBot.Services
     public class MusicService
     {
         private readonly LavaNode _lavaNode;
+        private readonly BotMessageBuilder _builder;
         private readonly DiscordSocketClient _discord;
-        public MusicService(LavaNode lavaNode, DiscordSocketClient discord)
+        public MusicService(LavaNode lavaNode, BotMessageBuilder builder, DiscordSocketClient discord)
         {
-            _lavaNode = lavaNode;
-            _discord = discord;
+            this._lavaNode = lavaNode;
+            this._builder = builder;
+            this._discord = discord;
+        }
+        private LavaNode ConnectedLavaNode
+        {
+            get => _lavaNode.IsConnected ? _lavaNode : throw new LavaNodeIsNotConnectedException();
         }
         public Task InitializeAsync()
         {
-            _discord.Ready += OnDiscordReady;
+            _discord.Ready += async () => await _lavaNode.ConnectAsync();
             return Task.CompletedTask;
-        }
-        private async Task OnDiscordReady()
-        {
-            if (!_lavaNode.IsConnected)
-                await _lavaNode.ConnectAsync();
         }
         public async Task JoinAsync(IVoiceChannel channel)
         {
-            if (_lavaNode.IsConnected) 
-            {
-                await _lavaNode.JoinAsync(channel);
-            }
+            await ConnectedLavaNode.JoinAsync(channel);
         }
         public async Task LeaveAsync(IVoiceChannel channel)
         {
-            if (_lavaNode.IsConnected)
-            {
-                await _lavaNode.LeaveAsync(channel);
-            }
+
+            await ConnectedLavaNode.LeaveAsync(channel);
         }
-        public async Task<string> PlayAsync(string searchQuery, IGuild guild)
+        public async Task<BotMessageBuilder> PlayAsync(string searchQuery, IGuild guild)
         {
-            if (_lavaNode.TryGetPlayer(guild, out var player))
+            if(ConnectedLavaNode.TryGetPlayer(guild, out var player))
             {
-                var searchResponse = await _lavaNode.SearchYouTubeAsync(searchQuery);
+                var searchResponse = await ConnectedLavaNode.SearchYouTubeAsync(searchQuery);
                 if (searchResponse.LoadStatus == LoadStatus.LoadFailed ||
                     searchResponse.LoadStatus == LoadStatus.NoMatches)
                 {
-                    return $"I wasn't able to find anything for `{searchQuery}`.";
+                    return _builder.
+                        WithEmbedWithTitle($"I wasn't able to find anything for `{searchQuery}`.").
+                        WithDisplayType(BotMessageStyle.Error);
                 }
                 var track = searchResponse.Tracks.FirstOrDefault();
                 await player.PlayAsync(track);
-                return $"Now Playing: {track.Title}";
+                return _builder.
+                    WithEmbedWithTitle($"Now Playing: {track.Title}").
+                    WithDisplayType(BotMessageStyle.Success);
             }
-            else
+            return _builder.
+                 WithEmbedWithTitle($"Music player not found.").
+                 WithDisplayType(BotMessageStyle.Warning);
+        }
+
+        public async Task<BotMessageBuilder> SkipAsync(IGuild guild)
+        {
+            if (ConnectedLavaNode.TryGetPlayer(guild, out var player))
             {
-                return "You need to have a player first";
+                var title = player.Track.Title;
+                await player.SkipAsync();
+                return
+                    _builder.WithEmbedWithTitle($"Scipped: {title}");
             }
+            return _builder.
+                 WithEmbedWithTitle($"Player not found.").
+                 WithDisplayType(BotMessageStyle.Exception);
+        }
+        private class LavaNodeIsNotConnectedException : Exception
+        {
+            public LavaNodeIsNotConnectedException() : base("Lava node server is not connected.") { }
         }
     }
 }

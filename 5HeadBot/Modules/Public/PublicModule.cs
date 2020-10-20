@@ -1,4 +1,7 @@
-﻿using _5HeadBot.Services;
+﻿using _5HeadBot.Modules.Internal;
+using _5HeadBot.Services;
+using _5HeadBot.Services.BotMessageService;
+using _5HeadBot.Services.BotMessageService.Data;
 using _5HeadBot.Services.PictureService;
 using Discord;
 using Discord.Commands;
@@ -8,12 +11,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _5HeadBot.Modules
+namespace _5HeadBot.Modules.Public
 {
-    public class PublicModule : ModuleBase<SocketCommandContext>
+    public class PublicModule : MessageSenderModuleBase
     {
         public PictureService PictureService { get; set; }
         public SearchService SearchService { get; set; }
+
         public CommandService Commands { get; set; }
 
         [Command("ping")]
@@ -60,8 +64,11 @@ namespace _5HeadBot.Modules
             if (string.IsNullOrEmpty(queryString) || string.IsNullOrWhiteSpace(queryString))
             {
                 await ReplyAsync(
-                    "A blank request is given.\n" +
-                    "There is only the great void and nothing else."
+                     NewMessage
+                    .WithEmbedWithTitle(
+                        "A blank request is given.\n" +
+                        "There is only the great void and nothing else.")
+                    .WithEmbedColor(Color.DarkerGrey)
                 );
                 return;
             }
@@ -73,13 +80,21 @@ namespace _5HeadBot.Modules
 
             if (searchResult.Error != null)
             {
-                await ReplyAsync(searchResult.Error.Message);
+                await ReplyAsync(
+                     NewMessage
+                    .WithEmbedWithTitle(searchResult.Error.Message)
+                    .WithDisplayType(BotMessageStyle.Error)
+                );
                 return;
             }
 
             if (searchResult.Items == null || searchResult.Items.Count == 0)
             {
-                await ReplyAsync("No results were found for your search.");
+                await ReplyAsync(
+                    NewMessage
+                    .WithEmbedWithTitle("No results were found for your search.")
+                    .WithEmbedColor(Color.DarkerGrey)
+                );
                 return;
             }
 
@@ -94,59 +109,6 @@ namespace _5HeadBot.Modules
 
                 await ReplyAsync(embed: page.Build());
             }
-        }
-
-        // Get list of all avaliable commands
-        [Command("help")]
-        [Summary("Returns list of all commands")]
-        [Alias("команды")]
-        public Task Help()
-        {
-            var g2 = Commands.Modules.SelectMany(m => m.Commands).GroupBy(c => c.Module.Aliases);
-            var groups = Commands.Modules.GroupBy((module) => module.Commands.SelectMany(c => c.Aliases));
-            var messages = new List<Embed>();
-
-            foreach (var g in g2)
-            {
-                var embed = new EmbedBuilder();
-                embed.WithTitle(
-                    string.Join(" or ", g.Key.Select(
-                        name => string.IsNullOrEmpty(name) ? "~~<No prefix>~~" : $"`{name}`"
-                    ).Reverse()
-                ));
-
-                var fields = new List<EmbedFieldBuilder>();
-                foreach (var c in g)
-                {
-                    // create a set of command names and prefixes, remove prefixes
-                    // создаем множество с названиями и префиксами текущей команды, удаляем из него префиксы
-                    var alliasesWithoutGroupPrefixes =
-                                    c.Aliases != null && c.Aliases.Count > 0
-                                    ? c.Aliases.SelectMany(a => a.Split(" ")).ToHashSet().Where(el => el.ToLower().Equals(c.Name.ToLower()) || !g.Key.Select(e => e.ToLower()).Contains(el.ToLower()))
-                                    : c.Aliases.ToHashSet();
-
-                    var styledAlliases = alliasesWithoutGroupPrefixes.Select(a => $"`{a}`");
-                    var commandNames = $"{string.Join(", ", styledAlliases)}{(string.IsNullOrEmpty(c.Summary) ? "" : $" - {c.Summary}")}";
-
-                    var commandArgs = string.Join(", ", c.Parameters.Select(arg => !arg.IsOptional ? $"***{arg}***" : $"[***{arg}***={(arg.DefaultValue ?? "")}]"));
-
-                    var fieldBuilder = new EmbedFieldBuilder
-                    {
-                        Name = commandNames,
-                        Value = commandArgs.Length > 0 ? commandArgs : "\u200B"
-                    };
-                    fields.Add(fieldBuilder);
-                }
-
-                embed.WithFields(fields);
-                messages.Add(embed.Build());
-            }
-
-            foreach (var mess in messages)
-            {
-                ReplyAsync(embed: mess);
-            }
-            return Task.CompletedTask;
         }
     }
 }

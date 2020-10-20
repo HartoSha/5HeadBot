@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _5HeadBot.Modules
+namespace _5HeadBot.Modules.Public
 {
     [Group("User")]
     [Alias("")]
@@ -18,7 +18,7 @@ namespace _5HeadBot.Modules
         [Command("userinfo")]
         public async Task UserInfoAsync(IUser user = null)
         {
-            user = user ?? Context.User;
+            user ??= Context.User;
 
             await ReplyAsync(user.ToString());
         }
@@ -64,9 +64,9 @@ namespace _5HeadBot.Modules
         [RequireBotPermission(
             GuildPermission.BanMembers,
             ErrorMessage = "Bot executing this command must be able to ban")]
-        public async Task UnbanUserAsync(string uName)
+        public async Task UnbanUserAsync(string user = "")
         {
-            var name = uName.ToLower();
+            var name = user.ToLower();
             var bans = await Context.Guild.GetBansAsync();
             var ban = bans.Where((ban) => ban.User.Username.ToLower() == name)?.FirstOrDefault();
             if (ban != null)
@@ -84,7 +84,7 @@ namespace _5HeadBot.Modules
         [Command("dm")]
         public async Task DmUser(IUser user = null, [Remainder] string message = "?")
         {
-            user = user ?? Context.User;
+            user ??= Context.User;
             await user.SendMessageAsync(message);
         }
     }

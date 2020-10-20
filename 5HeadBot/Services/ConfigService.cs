@@ -1,10 +1,7 @@
 ﻿using _5HeadBot.DTOS;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Services
@@ -48,14 +45,8 @@ namespace _5HeadBot.Services
         }
         public class RequiredConfigNotFoundOrNullException : Exception
         {
-            public RequiredConfigNotFoundOrNullException(string message) : base(message)
-            {
-
-            }
-
-            public RequiredConfigNotFoundOrNullException(string message, Exception innerException) : base(message, innerException)
-            {
-            }
+            public RequiredConfigNotFoundOrNullException(string message) : base(message) { }
+            public RequiredConfigNotFoundOrNullException(string message, Exception innerException) : base(message, innerException){ }
         }
     }
 }

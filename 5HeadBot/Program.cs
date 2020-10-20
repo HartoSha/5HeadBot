@@ -1,4 +1,6 @@
-﻿using _5HeadBot.Services;
+﻿using _5HeadBot.Modules.Internal;
+using _5HeadBot.Services;
+using _5HeadBot.Services.BotMessageService;
 using _5HeadBot.Services.PictureService;
 using _5HeadBot.Services.PictureService.Interfaces;
 using _5HeadBot.Services.PictureService.PictureProviders;
@@ -14,20 +16,9 @@ using Victoria;
 
 namespace _5HeadBot
 {
-    static class LavaNodeExtintions
-    {
-        public static void Dispose(this LavaNode node)
-        {
-            Task.Run(async () =>
-            {
-                await node.DisconnectAsync();
-            });
-        }
-    }
     // Bootstraped with https://github.com/discord-net/Discord.Net/tree/dev/samples/02_commands_framework
     class Program
     {
-        
         static void Main(string[] args)
             => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -38,39 +29,22 @@ namespace _5HeadBot
             // If you use another dependency injection framework, you should inspect
             // its documentation for the best way to do this.
 
-            var services = ConfigureServices();
+            await using var services = ConfigureServices();
 
-            var client = services.GetRequiredService<DiscordSocketClient>();
-            client.Log += LogAsync;
+            services.GetRequiredService<DiscordSocketClient>().Log += LogAsync;
             services.GetRequiredService<CommandService>().Log += LogAsync;
             services.GetRequiredService<LavaNode>().OnLog += LogAsync;
 
-            // maybe move logic of if-esle below to InitializeAsync() of ConfigService?
             await services.GetRequiredService<ConfigService>().
                 InitializeAsync(
-                    configJsonPath: "config.json", 
+                    configJsonPath: "config.json",
                     searchDepth: 10
                 );
-
-            var config = services.GetRequiredService<ConfigService>().Config;
-
-            if (!string.IsNullOrWhiteSpace(config.DiscordToken))
-            {
-                await client.LoginAsync(TokenType.Bot, config.DiscordToken);
-                await client.StartAsync();
-
-                await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-                await services.GetRequiredService<MusicService>().InitializeAsync();
-                await services.GetRequiredService<BrowserService>().InitializeAsync();
-
-                await Task.Delay(Timeout.Infinite);
-            }
-            else
-            {
-                await LogAsync(new LogMessage(LogSeverity.Error, config.DiscordToken, "config.json does not exist"));
-            }
-
-            await services.DisposeAsync();
+            await services.GetRequiredService<DiscordConnectionService>().InitializeAsync();
+            await services.GetRequiredService<BrowserService>().InitializeAsync();
+            await services.GetRequiredService<MusicService>().InitializeAsync();
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+            await Task.Delay(Timeout.Infinite);
         }
         private Task LogAsync(LogMessage log)
         {
@@ -82,11 +56,15 @@ namespace _5HeadBot
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
-                .AddSingleton<ConfigService>()
                 .AddSingleton<DiscordSocketClient>()
-                .AddSingleton<HttpClient>()
+                .AddSingleton<ConfigService>()
+                .AddSingleton<DiscordConnectionService>()
+                .AddTransient<BotMessageBuilder>()
+                .AddSingleton<BotMessageSender>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
+                .AddSingleton<MessageSenderModuleBase>()
+                .AddSingleton<HttpClient>()
                 .AddSingleton<PictureService>()
                 .AddSingleton<ICatImageProvider, TheCatApi>()
                 .AddSingleton<SearchService>()

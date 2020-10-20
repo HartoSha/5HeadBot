@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Services
@@ -18,7 +15,6 @@ namespace _5HeadBot.Services
             _http = http;
             _config = config;
         }
-
         public async Task<SearchResult> SearchAsync(string query)
         {
             string queryEndpoint = 

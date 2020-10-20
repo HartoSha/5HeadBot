@@ -5,7 +5,7 @@ namespace _5HeadBot.Services
 {
     public class IstuService
     {
-        private BrowserService _browser;
+        private readonly BrowserService _browser;
         public IstuService(BrowserService browser)
         {
             this._browser = browser;

@@ -6,7 +6,7 @@ using System.Dynamic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _5HeadBot.Modules
+namespace _5HeadBot.Modules.Public
 {
     [Group("Istu")]
     [Alias("")]
@@ -17,7 +17,7 @@ namespace _5HeadBot.Modules
         [Command("неделя")]
         [Alias("черта")]
         [Summary("Istu current week status")]
-        public async Task WhatIsIstuCurrentWeek() 
+        public async Task WhatIsIstuCurrentWeek()
             => await ReplyAsync(await Istu.GetWeekStatus());
     }
 }
