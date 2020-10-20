@@ -1,7 +1,7 @@
 # 5HeadBot
 A simple C# written discord bot.
 
-Uses https://github.com/discord-net/Discord.Net to interact wtih Discord API.
+Based on https://github.com/discord-net/Discord.Net.
 
 Uses https://github.com/Frederikam/Lavalink for music-related features.
 
