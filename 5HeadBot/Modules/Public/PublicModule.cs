@@ -5,10 +5,8 @@ using _5HeadBot.Services.BotMessageService.Data;
 using _5HeadBot.Services.PictureService;
 using Discord;
 using Discord.Commands;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules.Public
@@ -17,7 +15,6 @@ namespace _5HeadBot.Modules.Public
     {
         public PictureService PictureService { get; set; }
         public SearchService SearchService { get; set; }
-
         public CommandService Commands { get; set; }
 
         [Command("ping")]
@@ -64,7 +61,7 @@ namespace _5HeadBot.Modules.Public
             if (string.IsNullOrEmpty(queryString) || string.IsNullOrWhiteSpace(queryString))
             {
                 await ReplyAsync(
-                     NewMessage
+                     new BotMessageBuilder()
                     .WithEmbedWithTitle(
                         "A blank request is given.\n" +
                         "There is only the great void and nothing else.")
@@ -81,7 +78,7 @@ namespace _5HeadBot.Modules.Public
             if (searchResult.Error != null)
             {
                 await ReplyAsync(
-                     NewMessage
+                     new BotMessageBuilder()
                     .WithEmbedWithTitle(searchResult.Error.Message)
                     .WithDisplayType(BotMessageStyle.Error)
                 );
@@ -91,7 +88,7 @@ namespace _5HeadBot.Modules.Public
             if (searchResult.Items == null || searchResult.Items.Count == 0)
             {
                 await ReplyAsync(
-                    NewMessage
+                     new BotMessageBuilder()
                     .WithEmbedWithTitle("No results were found for your search.")
                     .WithEmbedColor(Color.DarkerGrey)
                 );

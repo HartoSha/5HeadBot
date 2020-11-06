@@ -2,7 +2,6 @@
 using _5HeadBot.Services.BotMessageService.Data;
 using Discord;
 using Discord.Commands;
-using Microsoft.Net.Http.Headers;
 using System;
 using System.Threading.Tasks;
 
@@ -20,18 +19,6 @@ namespace _5HeadBot.Modules.Internal
                     _sender = value;
                 else
                     throw new ArgumentException($"Forbidden override of {nameof(BotMessageSender)}.");
-            }
-        }
-
-        private BotMessageBuilder _builder;
-        public BotMessageBuilder NewMessage { 
-            get => _builder; 
-            set 
-            {
-                if (value is BotMessageBuilder)
-                    _builder = value;
-                else
-                    throw new ArgumentException($"Forbidden override of {nameof(BotMessageBuilder)}.");
             }
         }
         public async Task ReplyAsync(BotMessage message = null, bool isTTS = false, RequestOptions options = null)

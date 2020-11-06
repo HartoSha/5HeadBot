@@ -18,7 +18,7 @@ namespace _5HeadBot.Services
                 throw new System.Exception("Browser is not connnected");
             } 
 
-            if (await _browser.UrlIsResponding(ISTU_URL))
+            if (await _browser.UrlIsRespondingAsync(ISTU_URL))
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(await _browser.DownloadAsync(ISTU_URL));

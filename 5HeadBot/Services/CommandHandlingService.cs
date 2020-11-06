@@ -14,14 +14,12 @@ namespace _5HeadBot.Services
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
-        private readonly BotMessageBuilder _messageBuilder;
         private readonly BotMessageSender _messageSender;
         private readonly IServiceProvider _services;
         public CommandHandlingService(IServiceProvider services)
         {
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
-            _messageBuilder = services.GetRequiredService<BotMessageBuilder>();
             _messageSender = services.GetRequiredService<BotMessageSender>();
             _services = services;
 
@@ -34,7 +32,7 @@ namespace _5HeadBot.Services
 
         public async Task InitializeAsync()
         {
-            // Register modules that are public and inherit ModuleBase<T>.
+            // Register modules that are public and inherit ModuleBase<T>.  
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 
@@ -65,7 +63,7 @@ namespace _5HeadBot.Services
             if (!command.IsSpecified)
             {
                 await _messageSender.SendMessageAsync(
-                    _messageBuilder.
+                    new BotMessageBuilder().
                         WithDisplayType(BotMessageStyle.Warning).
                         WithEmbedWithTitle($"Command not found. You can use `help` command to get a list of all avaliable commands.")
                         .Build(),
@@ -80,7 +78,7 @@ namespace _5HeadBot.Services
 
             // the command failed, let's notify the user that something happened.
             await _messageSender.SendMessageAsync(
-                _messageBuilder.
+                new BotMessageBuilder().
                     WithDisplayType(BotMessageStyle.Error).
                     WithEmbedWithTitle(result.ErrorReason)
                     .Build(),

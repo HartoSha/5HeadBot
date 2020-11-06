@@ -340,3 +340,11 @@ ASALocalRun/
 healthchecksdb
 
 config.json
+.gitignore
+/5HeadBot/LavaLinkServer
+/5HeadBot/Properties
+/5HeadBot/.dockerignore
+/5HeadBot/docker-compose.yml
+/5HeadBot/Dockerfile
+/docker-compose.yml
+/5HeadBot/ClassDiagram1.cd

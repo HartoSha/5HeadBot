@@ -1,10 +1,8 @@
 ﻿using _5HeadBot.Modules.Internal;
 using _5HeadBot.Services;
+using _5HeadBot.Services.BotMessageService;
 using _5HeadBot.Services.BotMessageService.Data;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules.Public
@@ -14,6 +12,7 @@ namespace _5HeadBot.Modules.Public
     public class RNGmodule : MessageSenderModuleBase
     {
         public RNGService RNG { get; set; }
+
         [Command("Random")]
         [Summary("Returns a sequence of true and false")]
         [Alias("Flip", "Coin", "Rng")]
@@ -25,7 +24,7 @@ namespace _5HeadBot.Modules.Public
                 return;
             }
             await ReplyAsync(
-                NewMessage.
+                new BotMessageBuilder().
                 WithEmbedWithTitle($"Discord message can fit only 600 moon symbols.").
                 WithDisplayType(BotMessageStyle.Warning)
             );

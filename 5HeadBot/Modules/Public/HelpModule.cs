@@ -1,4 +1,6 @@
 ﻿using _5HeadBot.Modules.Internal;
+using _5HeadBot.Services.BotMessageService;
+using _5HeadBot.Services.BotMessageService.Data;
 using Discord;
 using Discord.Commands;
 using System;
@@ -15,61 +17,44 @@ namespace _5HeadBot.Modules.Public
         {
             Commands = commands;
         }
+
         // Get list of all avaliable commands
         [Command("help")]
         [Summary("Returns list of all commands")]
         [Alias("команды")]
-        public Task Help()
+        public async Task Help()
         {
-            var groups = Commands.Modules.SelectMany(m => m.Commands).GroupBy(c => c.Module.Aliases);
-            var messages = new List<Embed>();
+            // key - module command belongs to.
+            // value - list of all commands in the module
+            var dict = new Dictionary<ModuleInfo, List<CommandInfo>>();
 
-            foreach (var g in groups)
+            foreach (var c in Commands.Commands)
             {
-                var embed = new EmbedBuilder();
+                if (dict.ContainsKey(c.Module))
+                    dict[c.Module].Add(c);
 
-                if (g.Key.Where(name => name.Length > 0).Count() > 0)
-                {
-                    embed.WithTitle(
-                    string.Join(" or ", g.Key.Select(
-                            name => string.IsNullOrEmpty(name) ? "`*Without prefix*`" : $"`{name}`"
-                        ))
-                    );
-                }
-
-                var fields = new List<EmbedFieldBuilder>();
-                foreach (var c in g)
-                {
-                    // create a set of command names and prefixes, remove prefixes
-                    // создаем множество с названиями и префиксами текущей команды, удаляем из него префиксы
-                    var alliasesWithoutGroupPrefixes =
-                                    c.Aliases != null && c.Aliases.Count > 0
-                                    ? c.Aliases.SelectMany(a => a.Split(" ")).ToHashSet().Where(el => el.ToLower().Equals(c.Name.ToLower()) || !g.Key.Select(e => e.ToLower()).Contains(el.ToLower()))
-                                    : c.Aliases.ToHashSet();
-
-                    var styledAlliases = alliasesWithoutGroupPrefixes.Select(a => $"`{a}`");
-                    var commandNames = $"{string.Join(", ", styledAlliases)}{(string.IsNullOrEmpty(c.Summary) ? "" : $" - {c.Summary}")}";
-
-                    var commandArgs = string.Join("\n> ", c.Parameters.Select(arg => !arg.IsOptional ? $"{arg}" : $"[{arg}={(arg.DefaultValue ?? "")}]"));
-
-                    var fieldBuilder = new EmbedFieldBuilder
-                    {
-                        Name = commandNames,
-                        Value = commandArgs.Length > 0 ? $"> {commandArgs}" : "\u200B"
-                    };
-                    fields.Add(fieldBuilder);
-                }
-
-                embed.WithFields(fields)
-                    .WithColor(Color.Green);
-                messages.Add(embed.Build());
+                else dict[c.Module] = new List<CommandInfo>() { c };
             }
 
-            foreach (var mess in messages)
+            static string asCode(string s) => $"`{s}`";
+            foreach (var kvp in dict)
             {
-                ReplyAsync(embed: mess);
+                var fields = kvp.Value.Select(
+                    cInfo => new EmbedFieldBuilder()
+                        // in order to get all command's aliases without prefixes
+                        // we take only commandAlliasesCount / moduleAlliasesCount first command's aliases
+                        .WithName(string.Join(", ", cInfo.Aliases.OrderBy(a => a.Length).Take(cInfo.Aliases.Count / (kvp.Key.Aliases.Count > 0 ? kvp.Key.Aliases.Count : 1)).Select(str => asCode(str))))
+                        .WithValue(string.Join("\n ", cInfo.Parameters.Select(arg => !arg.IsOptional ? $"> {arg}" : $"> [{arg}={arg.DefaultValue ?? ""}]")) + "\u200B")
+                ).ToList();
+
+                await ReplyAsync(new BotMessageBuilder()
+                    // add command prefixes as title
+                    .WithEmbedWithTitle(string.Join(" or ", kvp.Key.Aliases?.Select(a => string.IsNullOrEmpty(a) ? "`*Without prefix*`" : asCode(a))))
+                    // add commands with their arguments as fields
+                    .WithEmbedWithFields(fields)
+                    .WithDisplayType(BotMessageStyle.Success)
+                    .Build());
             }
-            return Task.CompletedTask;
         }
     }
 }

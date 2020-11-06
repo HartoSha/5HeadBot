@@ -9,44 +9,49 @@ namespace _5HeadBot.Services
     public class ConfigService
     {
         public ConfigDTO Config { get; private set; }
-        public ConfigService() { }
 
         /// <summary>
-        /// Trys to find a correct config file <paramref name="configJsonPath"/> going up <paramref name="searchDepth"/> times
+        /// Trys to find a correct config.json file going up to a root folder.
+        /// Environment variables override settings of config.json file.
         /// </summary>
-        /// <param name="configJsonPath">JSON configuration file/path to find</param>
-        /// <param name="searchDepth">how many times try to go up a folder</param>
-        /// <returns></returns>
-
-        public async Task InitializeAsync(string configJsonPath, int searchDepth = 3)
+        public async Task InitializeAsync()
         {
-            string toBaseDir = "";
-            for (int i = 0; i < searchDepth; i++)
+            // initailaize config from config.json
+            var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            do
             {
-                var path = Path.Combine(toBaseDir, configJsonPath);
+                var path = Path.Combine(currentDir?.FullName, "config.json");
                 if (File.Exists(path))
-                {
-                    try {
-                        Config = JsonConvert.DeserializeObject<DTOS.ConfigDTO>(
-                            await File.ReadAllTextAsync(path)
-                        );
-                    } catch { }
-                }
-                toBaseDir += "../";
-            }
-            if(Config is null)
-            {
-                throw new RequiredConfigNotFoundOrNullException(@$"Configuration file not found or not correct '{configJsonPath}'");
-            }
+                    Config = JsonConvert.DeserializeObject<ConfigDTO>(
+                        await File.ReadAllTextAsync(path)
+                    );
+                currentDir = currentDir?.Parent;
+            } while (currentDir != null);
+
+            // override config from environment variables
+            Config = new ConfigDTO(
+                discordToken: Environment.GetEnvironmentVariable("DISCORD_TOKEN") ?? Config.DiscordToken,
+                googleApiKey: Environment.GetEnvironmentVariable("GOOGLE_API_KEY") ?? Config.GoogleApiKey,
+                googleSearchEngineKey: Environment.GetEnvironmentVariable("GOOGLE_SEARCH_ENGINE_KEY") ?? Config.GoogleSearchEngineKey,
+                catApiKey: Environment.GetEnvironmentVariable("CAT_API_KEY") ?? Config.CatApiKey
+            );
+
+            var errorMessage =
+                (string.IsNullOrEmpty(Config.DiscordToken) ? "DiscordToken is not provided " : "") +
+                (string.IsNullOrEmpty(Config.GoogleApiKey) ? "GoogleApiKey is not provided " : "") +
+                (string.IsNullOrEmpty(Config.GoogleSearchEngineKey) ? "GoogleSearchEngineKey is not provided " : "") +
+                (string.IsNullOrEmpty(Config.CatApiKey) ? "CatApiKey is not provided" : "");
+
+            if (!string.IsNullOrEmpty(errorMessage))
+                throw new ConfigurationException(errorMessage);
         }
         public override string ToString()
         {
             return JsonConvert.SerializeObject(Config);
         }
-        public class RequiredConfigNotFoundOrNullException : Exception
+        private class ConfigurationException : Exception
         {
-            public RequiredConfigNotFoundOrNullException(string message) : base(message) { }
-            public RequiredConfigNotFoundOrNullException(string message, Exception innerException) : base(message, innerException){ }
+            public ConfigurationException(string message) : base(message) { }
         }
     }
 }

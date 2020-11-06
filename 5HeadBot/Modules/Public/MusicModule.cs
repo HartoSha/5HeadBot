@@ -26,9 +26,9 @@ namespace _5HeadBot.Modules.Public
             if (channel is null)
             {
                 await ReplyAsync(
-                    NewMessage.
-                    WithEmbedWithTitle("You should be in a voice channel.").
-                    WithDisplayType(BotMessageStyle.Warning)
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle("You should be in a voice channel.")
+                    .WithDisplayType(BotMessageStyle.Warning)
                 );
                 return;
             }
@@ -44,9 +44,9 @@ namespace _5HeadBot.Modules.Public
             if (channel is null)
             {
                 await ReplyAsync(
-                    NewMessage.
-                    WithEmbedWithTitle("You should be in a voice channel.").
-                    WithDisplayType(BotMessageStyle.Warning)
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle("You should be in a voice channel.")
+                    .WithDisplayType(BotMessageStyle.Warning)
                 );
                 return;
             }
@@ -60,7 +60,7 @@ namespace _5HeadBot.Modules.Public
             if (query.Length == 0)
             {
                 await ReplyAsync(
-                    NewMessage
+                    new BotMessageBuilder()
                     .WithEmbedWithTitle(
                         "A blank request is given.\n" +
                         "There is only the great void and nothing else.")

@@ -1,6 +1,7 @@
 ﻿using _5HeadBot.Modules.Internal;
 using _5HeadBot.Services;
 using _5HeadBot.Services.BotMessageService;
+using _5HeadBot.Services.MemeService;
 using _5HeadBot.Services.PictureService;
 using _5HeadBot.Services.PictureService.Interfaces;
 using _5HeadBot.Services.PictureService.PictureProviders;
@@ -24,32 +25,27 @@ namespace _5HeadBot
 
         public async Task MainAsync()
         {
-            // You should dispose a service provider created using ASP.NET
-            // when you are finished using it, at the end of your app's lifetime.
-            // If you use another dependency injection framework, you should inspect
-            // its documentation for the best way to do this.
-
             await using var services = ConfigureServices();
 
             services.GetRequiredService<DiscordSocketClient>().Log += LogAsync;
             services.GetRequiredService<CommandService>().Log += LogAsync;
             services.GetRequiredService<LavaNode>().OnLog += LogAsync;
 
-            await services.GetRequiredService<ConfigService>().
-                InitializeAsync(
-                    configJsonPath: "config.json",
-                    searchDepth: 10
-                );
+            await services.GetRequiredService<ConfigService>().InitializeAsync();
+
             await services.GetRequiredService<DiscordConnectionService>().InitializeAsync();
             await services.GetRequiredService<BrowserService>().InitializeAsync();
-            await services.GetRequiredService<MusicService>().InitializeAsync();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+            await services.GetRequiredService<MusicService>().InitializeAsync();
+            
+            var config = services.GetRequiredService<LavaConfig>();
+            await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Initialized services..."));
+            await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Connecting to lavalink on: {config.Hostname}:{config.Port}..."));
             await Task.Delay(Timeout.Infinite);
         }
         private Task LogAsync(LogMessage log)
         {
             Console.WriteLine(log.ToString());
-
             return Task.CompletedTask;
         }
 
@@ -59,7 +55,6 @@ namespace _5HeadBot
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<ConfigService>()
                 .AddSingleton<DiscordConnectionService>()
-                .AddTransient<BotMessageBuilder>()
                 .AddSingleton<BotMessageSender>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
@@ -71,11 +66,15 @@ namespace _5HeadBot
                 .AddSingleton<RNGService>()
                 .AddSingleton<BrowserService>()
                 .AddSingleton<IstuService>()
-                .AddSingleton<LavaConfig>()
-                .AddLavaNode(x => {
+                .AddLavaNode(x =>
+                {
+                    x.Port = Environment.GetEnvironmentVariable("LAVALINK_PORT") is null ? (ushort)8080 : ushort.Parse(Environment.GetEnvironmentVariable("LAVALINK_PORT"));
+                    x.Hostname = Environment.GetEnvironmentVariable("LAVALINK_HOSTNAME") ?? "localhost";
+                    x.Authorization = Environment.GetEnvironmentVariable("LAVALINK_PASSWORD") ?? "youshallnotpass";
                     x.SelfDeaf = false;
                 })
                 .AddSingleton<MusicService>()
+                .AddSingleton<MemeService>()
                 .BuildServiceProvider();
         }
     }

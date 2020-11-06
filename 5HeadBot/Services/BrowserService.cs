@@ -18,18 +18,27 @@ namespace _5HeadBot.Services
             await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
             _browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
-                Headless = false
+                Headless = true,
+                DefaultViewport = new ViewPortOptions() { Width = 1920, Height = 1080 },
+                Args = new string[] { "--no-sandbox", "--disable-setuid-sandbox" }
             });
 
             _page = (await _browser.PagesAsync()).FirstOrDefault();
-            await _page.SetViewportAsync(new ViewPortOptions() { Width = 1920, Height = 1080 });
         }
-        public async Task<string> DownloadAsync(string url)
+        public async Task<string> DownloadAsync(string url, bool useBrowser = true)
         {
-            await _page?.GoToAsync(url);
-            return await _page?.GetContentAsync();
+            if (useBrowser)
+            {
+                await _page?.GoToAsync(url);
+                return await _page?.GetContentAsync();
+            }
+            else
+            {
+                var resp = await _httpClient.GetAsync(url);
+                return await resp.Content.ReadAsStringAsync();
+            }
         }
-        public async Task<bool> UrlIsResponding(string url)
+        public async Task<bool> UrlIsRespondingAsync(string url)
         {
             var responce = await _httpClient.GetAsync(url);
             return responce.IsSuccessStatusCode;
