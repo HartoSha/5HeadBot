@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using _5HeadBot.Services.ConfigService;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,8 +10,8 @@ namespace _5HeadBot.Services
     public class SearchService
     {
         private readonly HttpClient _http;
-        private readonly ConfigService _config;
-        public SearchService(HttpClient http, ConfigService config)
+        private readonly ConfigurationService _config;
+        public SearchService(HttpClient http, ConfigurationService config)
         {
             _http = http;
             _config = config;

@@ -1,14 +1,13 @@
-﻿using _5HeadBot.DTOS;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace _5HeadBot.Services
+namespace _5HeadBot.Services.ConfigService
 {
-    public class ConfigService
+    public class ConfigurationService
     {
-        public ConfigDTO Config { get; private set; }
+        public Configuration Config { get; private set; }
 
         /// <summary>
         /// Trys to find a correct config.json file going up to a root folder.
@@ -22,14 +21,14 @@ namespace _5HeadBot.Services
             {
                 var path = Path.Combine(currentDir?.FullName, "config.json");
                 if (File.Exists(path))
-                    Config = JsonConvert.DeserializeObject<ConfigDTO>(
+                    Config = JsonConvert.DeserializeObject<Configuration>(
                         await File.ReadAllTextAsync(path)
                     );
                 currentDir = currentDir?.Parent;
             } while (currentDir != null);
 
             // override config from environment variables
-            Config = new ConfigDTO(
+            Config = new Configuration(
                 discordToken: Environment.GetEnvironmentVariable("DISCORD_TOKEN") ?? Config.DiscordToken,
                 googleApiKey: Environment.GetEnvironmentVariable("GOOGLE_API_KEY") ?? Config.GoogleApiKey,
                 googleSearchEngineKey: Environment.GetEnvironmentVariable("GOOGLE_SEARCH_ENGINE_KEY") ?? Config.GoogleSearchEngineKey,

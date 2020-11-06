@@ -1,4 +1,5 @@
-﻿using _5HeadBot.Services.PictureService.Interfaces;
+﻿using _5HeadBot.Services.ConfigService;
+using _5HeadBot.Services.PictureService.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -14,8 +15,8 @@ namespace _5HeadBot.Services.PictureService.PictureProviders
     public class TheCatApi : ICatImageProvider
     {
         private readonly HttpClient _http;
-        private readonly ConfigService _config;
-        public TheCatApi(HttpClient http, ConfigService config)
+        private readonly ConfigurationService _config;
+        public TheCatApi(HttpClient http, ConfigurationService config)
         {
             _http = http;
             _config = config;

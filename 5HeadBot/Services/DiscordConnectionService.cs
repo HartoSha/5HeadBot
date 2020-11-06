@@ -1,4 +1,4 @@
-﻿using _5HeadBot.DTOS;
+﻿using _5HeadBot.Services.ConfigService;
 using Discord;
 using Discord.WebSocket;
 using System;
@@ -9,8 +9,8 @@ namespace _5HeadBot.Services
     public class DiscordConnectionService
     {
         private readonly DiscordSocketClient _discordClient;
-        private readonly ConfigDTO _config;
-        public DiscordConnectionService(ConfigService config, DiscordSocketClient discordClient)
+        private readonly Configuration _config;
+        public DiscordConnectionService(ConfigurationService config, DiscordSocketClient discordClient)
         {
             _config = config?.Config;
             _discordClient = discordClient;

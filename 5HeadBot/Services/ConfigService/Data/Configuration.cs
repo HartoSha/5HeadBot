@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace _5HeadBot.DTOS
+namespace _5HeadBot.Services.ConfigService
 {
-    public class ConfigDTO
+    public class Configuration
     {
         [JsonProperty("discord-token")]
         public string DiscordToken { get; }
@@ -15,9 +15,9 @@ namespace _5HeadBot.DTOS
 
         [JsonProperty("thecatapi.com-api-key")]
         public string CatApiKey { get; }
-        public ConfigDTO(
-            string discordToken, 
-            string googleApiKey, 
+        public Configuration(
+            string discordToken,
+            string googleApiKey,
             string googleSearchEngineKey,
             string catApiKey
         )
@@ -27,6 +27,5 @@ namespace _5HeadBot.DTOS
             GoogleSearchEngineKey = googleSearchEngineKey;
             CatApiKey = catApiKey;
         }
-        
     }
 }

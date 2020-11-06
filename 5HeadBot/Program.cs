@@ -1,6 +1,7 @@
 ﻿using _5HeadBot.Modules.Internal;
 using _5HeadBot.Services;
 using _5HeadBot.Services.BotMessageService;
+using _5HeadBot.Services.ConfigService;
 using _5HeadBot.Services.MemeService;
 using _5HeadBot.Services.PictureService;
 using _5HeadBot.Services.PictureService.Interfaces;
@@ -31,7 +32,7 @@ namespace _5HeadBot
             services.GetRequiredService<CommandService>().Log += LogAsync;
             services.GetRequiredService<LavaNode>().OnLog += LogAsync;
 
-            await services.GetRequiredService<ConfigService>().InitializeAsync();
+            await services.GetRequiredService<ConfigurationService>().InitializeAsync();
 
             await services.GetRequiredService<DiscordConnectionService>().InitializeAsync();
             await services.GetRequiredService<MusicService>().InitializeAsync();
@@ -54,7 +55,7 @@ namespace _5HeadBot
         {
             return new ServiceCollection()
                 .AddSingleton<DiscordSocketClient>()
-                .AddSingleton<ConfigService>()
+                .AddSingleton<ConfigurationService>()
                 .AddSingleton<DiscordConnectionService>()
                 .AddSingleton<BotMessageSender>()
                 .AddSingleton<CommandService>()
