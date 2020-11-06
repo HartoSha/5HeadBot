@@ -34,13 +34,14 @@ namespace _5HeadBot
             await services.GetRequiredService<ConfigService>().InitializeAsync();
 
             await services.GetRequiredService<DiscordConnectionService>().InitializeAsync();
+            await services.GetRequiredService<MusicService>().InitializeAsync();
+            var config = services.GetRequiredService<LavaConfig>();
+            await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Connecting to lavalink on: {config.Hostname}:{config.Port}..."));
+
             await services.GetRequiredService<BrowserService>().InitializeAsync();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-            await services.GetRequiredService<MusicService>().InitializeAsync();
+            await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Initialized services... Bot is usable now!"));
             
-            var config = services.GetRequiredService<LavaConfig>();
-            await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Initialized services..."));
-            await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Connecting to lavalink on: {config.Hostname}:{config.Port}..."));
             await Task.Delay(Timeout.Infinite);
         }
         private Task LogAsync(LogMessage log)

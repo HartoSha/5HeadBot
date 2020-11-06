@@ -55,9 +55,7 @@ namespace _5HeadBot.Services
                     WithEmbedWithTitle($"Now Playing: {track.Title}").
                     WithDisplayType(BotMessageStyle.Success);
             }
-            return new BotMessageBuilder().
-                 WithEmbedWithTitle($"Music player not found.").
-                 WithDisplayType(BotMessageStyle.Warning);
+            return null;
         }
 
         public async Task<BotMessageBuilder> SkipAsync(IGuild guild)

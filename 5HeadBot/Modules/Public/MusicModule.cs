@@ -68,8 +68,19 @@ namespace _5HeadBot.Modules.Public
                 );
                 return;
             }
-                
-            await ReplyAsync(await MusicService.PlayAsync(string.Join(" ", query), Context.Guild));
+            var reply = await MusicService.PlayAsync(string.Join(" ", query), Context.Guild);
+            if (reply is null) 
+            {
+                await ReplyAsync(
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle(
+                        "No music player found\n" +
+                        "Consider using `join` command.")
+                    .WithDisplayType(BotMessageStyle.Warning)
+                );
+                return;
+            }
+            await ReplyAsync(reply);
         }
 
         [Command("Skip")]
