@@ -15,6 +15,7 @@ namespace _5HeadBot.Modules.Public
         }
 
         [Command("Хочу шутку")]
+        [Alias("Шутка", "Шутку", "meme", "gimme")]
         public async Task GetMeme()
         {
             var memeResp = await _memes.GetMemeAsync();

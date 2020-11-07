@@ -1,9 +1,5 @@
 ﻿using _5HeadBot.Services;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules.Public
@@ -14,7 +10,7 @@ namespace _5HeadBot.Modules.Public
     {
         public IstuService Istu { get; set; }
 
-        [Command("неделя")]
+        [Command("неделя", RunMode = RunMode.Async)]
         [Alias("черта")]
         [Summary("Istu current week status")]
         public async Task WhatIsIstuCurrentWeek()

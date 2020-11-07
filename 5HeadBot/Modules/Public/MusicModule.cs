@@ -4,9 +4,6 @@ using _5HeadBot.Services.BotMessageService;
 using _5HeadBot.Services.BotMessageService.Data;
 using Discord;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules.Public

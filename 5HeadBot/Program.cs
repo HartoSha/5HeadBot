@@ -3,6 +3,8 @@ using _5HeadBot.Services;
 using _5HeadBot.Services.BotMessageService;
 using _5HeadBot.Services.ConfigService;
 using _5HeadBot.Services.MemeService;
+using _5HeadBot.Services.NetworkService;
+using _5HeadBot.Services.NetworkService.Deserializers;
 using _5HeadBot.Services.PictureService;
 using _5HeadBot.Services.PictureService.Interfaces;
 using _5HeadBot.Services.PictureService.PictureProviders;
@@ -39,7 +41,7 @@ namespace _5HeadBot
             var config = services.GetRequiredService<LavaConfig>();
             await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Connecting to lavalink on: {config.Hostname}:{config.Port}..."));
 
-            await services.GetRequiredService<BrowserService>().InitializeAsync();
+            await services.GetRequiredService<NetWorker>().InitializeAsync();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
             await LogAsync(new LogMessage(LogSeverity.Info, "Main", $"Initialized services... Bot is usable now!"));
             
@@ -66,7 +68,8 @@ namespace _5HeadBot
                 .AddSingleton<ICatImageProvider, TheCatApi>()
                 .AddSingleton<SearchService>()
                 .AddSingleton<RNGService>()
-                .AddSingleton<BrowserService>()
+                .AddSingleton<IDeserializer, JsonDeserializer>()
+                .AddSingleton<NetWorker>()
                 .AddSingleton<IstuService>()
                 .AddLavaNode(x =>
                 {

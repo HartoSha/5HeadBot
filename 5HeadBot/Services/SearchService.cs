@@ -1,4 +1,5 @@
 ﻿using _5HeadBot.Services.ConfigService;
+using _5HeadBot.Services.NetworkService;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
@@ -9,11 +10,11 @@ namespace _5HeadBot.Services
 {
     public class SearchService
     {
-        private readonly HttpClient _http;
+        private readonly NetWorker _worker;
         private readonly ConfigurationService _config;
-        public SearchService(HttpClient http, ConfigurationService config)
+        public SearchService(NetWorker worker, ConfigurationService config)
         {
-            _http = http;
+            _worker = worker;
             _config = config;
         }
         public async Task<SearchResult> SearchAsync(string query)
@@ -24,11 +25,7 @@ namespace _5HeadBot.Services
                 $"&cx={_config.Config.GoogleSearchEngineKey}" +
                 $"&q={query}";
 
-            string json = await _http.GetAsync(queryEndpoint)?.
-                Result?.Content?.ReadAsStringAsync();
-
-            SearchResult res = JsonConvert.DeserializeObject<SearchResult>(json);
-            return res;
+            return (await _worker.GetDeserializedAsync<SearchResult>(queryEndpoint)).DesirializedContent;
         }
         public class SearchResult
         {
