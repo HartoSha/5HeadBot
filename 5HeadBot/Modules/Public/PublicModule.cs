@@ -1,8 +1,8 @@
 ﻿using _5HeadBot.Modules.Internal;
-using _5HeadBot.Services;
-using _5HeadBot.Services.BotMessageService;
-using _5HeadBot.Services.BotMessageService.Data;
-using _5HeadBot.Services.PictureService;
+using _5HeadBot.Services.Core.BotMessageService;
+using _5HeadBot.Services.Core.BotMessageService.Data;
+using _5HeadBot.Services.Feature;
+using _5HeadBot.Services.Feature.PictureService;
 using Discord;
 using Discord.Commands;
 using System.IO;

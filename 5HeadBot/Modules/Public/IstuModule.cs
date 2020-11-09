@@ -1,4 +1,4 @@
-﻿using _5HeadBot.Services;
+﻿using _5HeadBot.Services.Feature;
 using Discord.Commands;
 using System.Threading.Tasks;
 

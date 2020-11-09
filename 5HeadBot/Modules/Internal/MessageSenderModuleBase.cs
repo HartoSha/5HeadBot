@@ -1,5 +1,5 @@
-﻿using _5HeadBot.Services.BotMessageService;
-using _5HeadBot.Services.BotMessageService.Data;
+﻿using _5HeadBot.Services.Core.BotMessageService;
+using _5HeadBot.Services.Core.BotMessageService.Data;
 using Discord;
 using Discord.Commands;
 using System;
