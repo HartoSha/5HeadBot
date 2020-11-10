@@ -1,5 +1,4 @@
-﻿using _5HeadBot.Modules.Internal;
-using _5HeadBot.Services.Core;
+﻿using _5HeadBot.Services.Core;
 using _5HeadBot.Services.Core.BotMessageService;
 using _5HeadBot.Services.Core.ConfigService;
 using _5HeadBot.Services.Core.NetworkService;
@@ -63,7 +62,6 @@ namespace _5HeadBot
                 .AddSingleton<BotMessageSender>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
-                .AddSingleton<MessageSenderModuleBase>()
                 .AddSingleton<HttpClient>()
                 .AddSingleton<PictureService>()
                 .AddSingleton<ICatImageProvider, TheCatApi>()
