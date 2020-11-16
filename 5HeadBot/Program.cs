@@ -1,5 +1,6 @@
 ﻿using _5HeadBot.Services.Core;
 using _5HeadBot.Services.Core.BotMessageService;
+using _5HeadBot.Services.Core.CachingService;
 using _5HeadBot.Services.Core.ConfigService;
 using _5HeadBot.Services.Core.NetworkService;
 using _5HeadBot.Services.Core.NetworkService.Deserializers;
@@ -79,6 +80,8 @@ namespace _5HeadBot
                 })
                 .AddSingleton<MusicService>()
                 .AddSingleton<MemeService>()
+                .AddMemoryCache()
+                .UseCaching<MemoryCachingService>()
                 .BuildServiceProvider();
         }
     }
