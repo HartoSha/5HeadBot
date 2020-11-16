@@ -10,6 +10,11 @@ namespace _5HeadBot.Modules.Internal
     public class MessageSenderModuleBase : ModuleBase<SocketCommandContext>
     {
         private BotMessageSender _sender;
+
+        /// <summary>
+        /// This property with exception in setter is used only in order 
+        /// to inject dependency without using the class's constructor. 
+        /// </summary>
         public BotMessageSender Sender
         {
             get => _sender;
