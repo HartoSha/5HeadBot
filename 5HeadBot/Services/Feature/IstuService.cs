@@ -19,8 +19,6 @@ namespace _5HeadBot.Services.Feature
         private readonly string ISTU_URL = @"https://istu.ru";
         public async Task<string> GetWeekStatus()
         {
-            var mond = GetNextMonday();
-
             if (_cache.GetValue("istu_week_status") is string cachedStatus)
                 return cachedStatus;
 
