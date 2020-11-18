@@ -80,7 +80,6 @@ namespace _5HeadBot
                 })
                 .AddSingleton<MusicService>()
                 .AddSingleton<MemeService>()
-                .AddMemoryCache()
                 .UseCaching<MemoryCachingService>()
                 .BuildServiceProvider();
         }

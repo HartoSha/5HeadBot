@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 
 namespace _5HeadBot.Services.Core.ConfigService
 {
+    /// <summary>
+    /// TODO: Options pattern? 
+    /// https://stackoverflow.com/questions/53884417/net-core-di-ways-of-passing-parameters-to-constructor
+    /// </summary>
     public class ConfigurationService
     {
         public Configuration Config { get; private set; }
