@@ -21,17 +21,21 @@ jobs:
       run: dotnet build --configuration Release --no-restore
   
   deploy:
+    if: ${{ github.event_name == 'push' }}
+    needs: build
     
     runs-on: ubuntu-latest
-    needs: [build]
     
     steps:
       - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.6.8
+      - uses: akhileshns/heroku-deploy@v3.6.8 # This is the action
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_app_name: ""
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: true
-          docker_heroku_process_type: worker
-          appdir: "5headbot"
+          justlogin: true
+      - run: |
+          cd 5HeadBot
+          heroku container:login
+          heroku container:push worker -a ${{secrets.HEROKU_APP_NAME}}
+          heroku container:release worker -a ${{secrets.HEROKU_APP_NAME}}
