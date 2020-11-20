@@ -38,4 +38,4 @@ WORKDIR /app/publish
 COPY --from=publish /app/publish .
 
 EXPOSE 80
-ENTRYPOINT ["dotnet", "5HeadBot.dll"]
+CMD ["dotnet", "5HeadBot.dll"]
