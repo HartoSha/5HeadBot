@@ -3,7 +3,6 @@ using _5HeadBot.Services.Core.BotMessageService;
 using _5HeadBot.Services.Core.BotMessageService.Data;
 using Discord;
 using Discord.Commands;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
