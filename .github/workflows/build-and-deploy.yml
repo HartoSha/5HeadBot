@@ -34,4 +34,4 @@ jobs:
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           usedocker: true
           docker_heroku_process_type: worker
-          appdir: 5headbot
+          appdir: "./5headbot"
