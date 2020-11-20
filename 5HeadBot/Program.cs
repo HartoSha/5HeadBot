@@ -68,8 +68,10 @@ namespace _5HeadBot
                 .AddSingleton<ICatImageProvider, TheCatApi>()
                 .AddSingleton<SearchService>()
                 .AddSingleton<RNGService>()
-                .AddSingleton<IDeserializer, JsonDeserializer>()
-                .AddSingleton<NetWorker>()
+                .AddNetWorker(config =>
+                {
+                    config.DefaultDeserializer = new JsonDeserializer();
+                })
                 .AddSingleton<IstuService>()
                 .AddLavaNode(x =>
                 {

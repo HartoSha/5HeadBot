@@ -1,7 +1,6 @@
 ﻿using _5HeadBot.Services.Core.NetworkService.Deserializers;
 using PuppeteerSharp;
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -15,20 +14,15 @@ namespace _5HeadBot.Services.Core.NetworkService
     public class NetWorker : IDisposable, IAsyncDisposable
     {
         private Browser _browser;
-        private Browser ConnectedBrowser 
+        private Browser ConnectedBrowser
             => _browser.IsConnected ? _browser : throw new Exception("Browser is not connected");
-
-        private Page _page;
-        private Page AvaliablePage
-            => !_page.IsClosed && _browser.IsConnected ? _page : throw new Exception("Browser page is not avaliable");
 
         private HttpClient _httpClient = new HttpClient();
 
-        private IDeserializer _defaultDeserializer;
-
-        public NetWorker(IDeserializer defaultDeserializer)
+        private readonly NetWorkerConfig _config;
+        public NetWorker(NetWorkerConfig config)
         {
-            _defaultDeserializer = defaultDeserializer;
+            _config = config;
         }
         public async Task InitializeAsync()
         {
@@ -39,37 +33,46 @@ namespace _5HeadBot.Services.Core.NetworkService
                 DefaultViewport = new ViewPortOptions() { Width = 1920, Height = 1080 },
                 Args = new string[] { "--no-sandbox", "--disable-setuid-sandbox" }
             });
-
-            _page = (await ConnectedBrowser.PagesAsync()).FirstOrDefault();
         }
+
+        /// <summary>
+        /// Uses browser to navigate to given <paramref name="url"/>,
+        /// gets pages' content and makes <see cref="HttpResponseMessage"/> out of it
+        /// </summary>
+        private async Task<HttpResponseMessage> GetUsingBrowserPage(string url)
+        {
+            // create new page and close it when done
+            using var page = await ConnectedBrowser.NewPageAsync();
+
+            // go to the page
+            // wait to .js executing and page loading...
+            var pageResponce = await page.GoToAsync(url, WaitUntilNavigation.DOMContentLoaded);
+
+            // then read contents of the page
+            var content = new StringContent(await page.GetContentAsync());
+
+            // create http responce
+            return new HttpResponseMessage(pageResponce.Status)
+            {
+                Content = content
+            };
+        }
+
         /// <summary>
         /// Gets <see cref="HttpResponseMessage"/> from an url by chosen way
         /// </summary>
         public async Task<HttpResponseMessage> GetAsync(string url, bool useBrowserEmulation = false)
         {
-            HttpResponseMessage responce;
             if (useBrowserEmulation)
-            {
-                // go to the page
-                // wait to .js executing and page loading...
-                var response = await AvaliablePage.GoToAsync(url, WaitUntilNavigation.DOMContentLoaded);
+                return await GetUsingBrowserPage(url);
 
-                // then read contents of the page
-                var content = new StringContent(await _page.GetContentAsync());
-                responce = new HttpResponseMessage(response.Status)
-                {
-                    Content = content
-                };
-            }
             else
-            {
-                responce = await _httpClient.GetAsync(url);
-            }
-            return responce;
+                return await _httpClient.GetAsync(url);
         }
 
         /// <summary>
-        /// Makes a http GET request on a given <paramref name="url"/>, desirializes responce to an obect of type <typeparamref name="T"/> 
+        /// Makes a http GET request on a given <paramref name="url"/>, 
+        /// desirializes responce to an obect of type <typeparamref name="T"/> 
         /// </summary>
         /// <typeparam name="T">Type, response is desirialized to</typeparam>
         /// <param name="url">Request url</param>
@@ -80,7 +83,7 @@ namespace _5HeadBot.Services.Core.NetworkService
         {
             var responce = await this.GetAsync(url, useBrowserEmulation);
 
-            var deserializerToBeUsed = deserializer ?? _defaultDeserializer;
+            var deserializerToBeUsed = deserializer ?? _config.DefaultDeserializer;
             // desirialize responce string
             // create responce message
             Exception exception = null;
@@ -109,7 +112,7 @@ namespace _5HeadBot.Services.Core.NetworkService
         {
             var responce = await this.GetAsync(url, useBrowserEmulation);
 
-            var deserializerToBeUsed = deserializer ?? _defaultDeserializer;
+            var deserializerToBeUsed = deserializer ?? _config.DefaultDeserializer;
             // desirialize responce string
             // create responce message
             Exception exception = null;
@@ -137,12 +140,10 @@ namespace _5HeadBot.Services.Core.NetworkService
             if(disposing)
             {
                 _httpClient?.Dispose();
-                _page?.Dispose();
                 _browser?.Dispose();
             }
 
             _httpClient = null;
-            _page = null;
             _browser = null;
         }
 
@@ -159,14 +160,10 @@ namespace _5HeadBot.Services.Core.NetworkService
             if (_httpClient != null)
                 await Task.Run(() => _httpClient.Dispose());
 
-            if (_page != null)
-                await _page.DisposeAsync();
-
             if(_browser != null)
                 await _browser.DisposeAsync();
 
             _httpClient = null;
-            _page = null;
             _browser = null;
         }
         #endregion
