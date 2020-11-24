@@ -1,5 +1,7 @@
 # 5HeadBot
-A simple C# written discord bot.
+![CI](https://github.com/HartoSha/5HeadBot/workflows/CI/badge.svg)
+
+### A simple C# written discord bot.
 
 - Based on [Discord.Net](https://github.com/discord-net/Discord.Net)
 
