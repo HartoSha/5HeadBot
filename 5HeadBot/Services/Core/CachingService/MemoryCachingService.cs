@@ -14,13 +14,16 @@ namespace _5HeadBot.Services.Core.CachingService
             _memoryCache = memoryCache;
         }
 
-        public object GetValue(string key)
+        public object Get(string key)
         {
             return _memoryCache.Get(key);
         }
 
-        public object Add(string key, object value, DateTimeOffset absExpiration)
+        public object Set(string key, object value, DateTimeOffset absExpiration)
         {
+            if (absExpiration < DateTimeOffset.Now)
+                throw new ArgumentOutOfRangeException(nameof(absExpiration), "Date already expired");
+
             return _memoryCache.Set(key, value, absExpiration);
         }
     }

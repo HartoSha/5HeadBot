@@ -19,7 +19,7 @@ namespace _5HeadBot.Services.Feature
         private readonly string ISTU_URL = @"https://istu.ru";
         public async Task<string> GetWeekStatus()
         {
-            if (_cache.GetValue("istu_week_status") is string cachedStatus)
+            if (_cache.Get("istu_week_status") is string cachedStatus)
                 return cachedStatus;
 
             var resp = await _network.GetAsync(ISTU_URL, useBrowserEmulation: true);
@@ -38,7 +38,7 @@ namespace _5HeadBot.Services.Feature
                 {
                     // calculate time to the next monday
                     var toNextMonday = GetNextMonday() - DateTime.Now;
-                    _cache.Add("istu_week_status", weekStatus, DateTimeOffset.Now.Add(toNextMonday));
+                    _cache.Set("istu_week_status", weekStatus, DateTimeOffset.Now.Add(toNextMonday));
                 }
 
                 return weekStatus ?? "Неделя не может быть определена.";
