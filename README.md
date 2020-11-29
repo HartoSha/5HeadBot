@@ -1,5 +1,6 @@
 # 5HeadBot
 ![CI](https://github.com/HartoSha/5HeadBot/workflows/CI/badge.svg)
+[![CodeFactor](https://www.codefactor.io/repository/github/hartosha/5headbot/badge)](https://www.codefactor.io/repository/github/hartosha/5headbot)
 
 ### A simple C# written discord bot.
 
