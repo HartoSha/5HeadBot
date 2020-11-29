@@ -22,29 +22,47 @@ namespace _5HeadBot.Services.Feature
             if (_cache.Get("istu_week_status") is string cachedStatus)
                 return cachedStatus;
 
-            var resp = await _network.GetAsync(ISTU_URL, useBrowserEmulation: true);
+            var weekStatus = await TryGetIstuWeekStatusFromIstuWithBrowserEmulation(ISTU_URL);
 
+            if (weekStatus != null && !string.IsNullOrEmpty(weekStatus))
+            {
+                _ = CacheUntillNextMonday("istu_week_status", weekStatus);
+                return weekStatus;
+            }
+
+            return "Неделя не может быть определена";
+        }
+
+        private async Task<string> TryGetIstuWeekStatusFromIstuWithBrowserEmulation(string istuUrl)
+        {
+            var resp = await _network.GetAsync(istuUrl, useBrowserEmulation: true);
             if (resp.IsSuccessStatusCode)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(await resp.Content.ReadAsStringAsync());
-                var node = doc.DocumentNode.
+                var weekHtmlNode = doc.DocumentNode.
                     SelectSingleNode("//div[contains(@class, 'site-header-top-element ref-week type-separated')]");
-
-                var weekStatus = node?.InnerText;
-
-                // only cache if status was found
-                if (weekStatus != null && !string.IsNullOrEmpty(weekStatus))
-                {
-                    // calculate time to the next monday
-                    var toNextMonday = GetNextMonday() - DateTime.Now;
-                    _cache.Set("istu_week_status", weekStatus, DateTimeOffset.Now.Add(toNextMonday));
-                }
-
-                return weekStatus ?? "Неделя не может быть определена.";
+                
+                var istuWeekStatus = weekHtmlNode?.InnerText;
+                return istuWeekStatus;
             }
 
-            else return $"Error. {ISTU_URL} does not respond.";
+            return null;
+        }
+
+        private DateTimeOffset CacheUntillNextMonday(string key, string value)
+        {
+            // calculate time to the next monday
+            var nextMonday = GetNextMonday();
+            var toNextMonday = nextMonday - DateTime.Today;
+
+            // set expiration as next monday
+            var absExpiration = new DateTimeOffset(DateTime.Today)
+                .Add(toNextMonday);
+
+            _cache.Set(key, value, absExpiration);
+
+            return absExpiration;
         }
 
         private DateTime GetNextMonday()
