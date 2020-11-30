@@ -10,6 +10,7 @@ using Victoria.Enums;
 
 namespace _5HeadBot.Services.Feature
 {
+    // TODO: complete the track queue functionality
     public class MusicService
     {
         private readonly LavaNode _lavaNode;
@@ -34,7 +35,6 @@ namespace _5HeadBot.Services.Feature
         }
         public async Task LeaveAsync(IVoiceChannel channel)
         {
-
             await ConnectedLavaNode.LeaveAsync(channel);
         }
         public async Task<BotMessageBuilder> PlayAsync(string searchQuery, IGuild guild)

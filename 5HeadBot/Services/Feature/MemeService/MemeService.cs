@@ -15,6 +15,13 @@ namespace _5HeadBot.Services.Feature.MemeService
         public async Task<Meme> GetMemeAsync()
         {
             var responce = await _worker.GetDeserializedAsync<Meme>(MEMES_PROVIDER_URL);
+
+            // TODO: Add logging
+            // if(responce.Exception != null)
+            // {
+            //     Logger.Log(responce.Exception);
+            // }
+
             return responce.DesirializedContent;
         }
     }
