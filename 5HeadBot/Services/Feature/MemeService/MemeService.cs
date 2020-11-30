@@ -12,19 +12,10 @@ namespace _5HeadBot.Services.Feature.MemeService
         }
 
         const string MEMES_PROVIDER_URL = "https://meme-api.herokuapp.com/gimme";
-        public async Task<MemeServiceResponce> GetMemeAsync()
+        public async Task<Meme> GetMemeAsync()
         {
-            var result = new MemeServiceResponce();
-
             var responce = await _worker.GetDeserializedAsync<Meme>(MEMES_PROVIDER_URL);
-
-            if(responce.Exception is null)
-                result.Meme = responce.DesirializedContent;
-            
-            else
-                result.ErrorMessage = "No memes left for today.";
-
-            return result;
+            return responce.DesirializedContent;
         }
     }
 }
