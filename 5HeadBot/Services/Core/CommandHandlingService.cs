@@ -56,6 +56,17 @@ namespace _5HeadBot.Services.Core
             // Perform the execution of the command. In this method,
             // the command service will perform precondition and parsing check
             // then execute the command if one is matched.
+
+            SkipWhiteSpaces(ref argPos, message.Content);
+            static void SkipWhiteSpaces(ref int argPos, string mess)
+            {
+                while(argPos < mess.Length 
+                    && string.IsNullOrWhiteSpace(mess[argPos].ToString()))
+                {
+                    argPos++;
+                }
+            }
+
             await _commands.ExecuteAsync(context, argPos, _services);
             // Note that normally a result will be returned by this format, but here
             // we will handle the result in CommandExecutedAsync,
