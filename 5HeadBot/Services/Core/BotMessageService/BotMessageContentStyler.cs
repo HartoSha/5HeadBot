@@ -54,6 +54,12 @@ namespace _5HeadBot.Services.Core.BotMessageService
                         WithTitle($"Exception: {embed.Title}").
                         Build(),
 
+                BotMessageStyle.Info =>
+                    embed?.
+                        ToEmbedBuilder().
+                        WithColor(Color.Blue).
+                        Build(),
+
                 _ => embed,
             };
         }
