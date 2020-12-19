@@ -1,59 +1,63 @@
 ﻿using _5HeadBot.Modules.Internal;
-using _5HeadBot.Services.Feature;
 using _5HeadBot.Services.Core.BotMessageService;
 using _5HeadBot.Services.Core.BotMessageService.Data;
+using _5HeadBot.Services.Feature.MusicService;
+using _5HeadBot.Services.Feature.MusicService.Attributes;
+using _5HeadBot.Services.Feature.MusicService.Data;
 using Discord;
 using Discord.Commands;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Modules.Public
 {
     [Group("Music")]
     [Alias("Mus", "M")]
+    [RequireUserToBeInAVoiceChannel(ErrorMessage = "You shold be in a voice channel to use this command.")]
     [RequireContext(ContextType.Guild, ErrorMessage = "You can use music commads only in guild.")]
     [RequireBotPermission(GuildPermission.Connect, ErrorMessage = "Bot should have permission to connect to a voice channel.")]
     [RequireBotPermission(GuildPermission.Speak, ErrorMessage = "Bot should have permission to speak.")]
     public class MusicModule : MessageSenderModuleBase
     {
-        public MusicService MusicService { get; set; }
+        private readonly IMusicService _musicService;
+        public MusicModule(IMusicService musicService)
+        {
+            _musicService = musicService;
+        }
+        
         [Command("Join")]
         public async Task Join()
         {
-            var channel = (Context.User as IVoiceState)?.VoiceChannel;
-            if (channel is null)
+            var channelOfTheUser = (Context.User as IVoiceState)?.VoiceChannel;
+            if((await channelOfTheUser.GetUserAsync(Context.Client.CurrentUser.Id)) != null)
             {
                 await ReplyAsync(
                     new BotMessageBuilder()
-                    .WithEmbedWithTitle("You should be in a voice channel.")
-                    .WithDisplayType(BotMessageStyle.Warning)
-                );
+                    .WithDisplayType(BotMessageStyle.Info)
+                    .WithEmbedWithTitle("I'm in the voice channel."));
                 return;
             }
 
-            await Leave();
-            await MusicService.JoinAsync(channel);
+            await _musicService.JoinAsync(channelOfTheUser);
         }
 
+        [RequireBotToBeInAVoiceChannel(ErrorMessage = "Bot should be in a voice channel. Consider using `join` command.")]
+        [RequireUserAndBotToBeInTheSameVoiceChannel(ErrorMessage = "You must be in the same channel as the bot")]
         [Command("Leave")]
         public async Task Leave()
         {
-            var channel = (Context.User as IVoiceState)?.VoiceChannel;
-            if (channel is null)
-            {
-                await ReplyAsync(
-                    new BotMessageBuilder()
-                    .WithEmbedWithTitle("You should be in a voice channel.")
-                    .WithDisplayType(BotMessageStyle.Warning)
-                );
-                return;
-            }
-            
-            await MusicService.LeaveAsync(channel);
+            var channelOfTheUser = (Context.User as IVoiceState)?.VoiceChannel;
+            if (channelOfTheUser != null)
+                await _musicService.LeaveAsync(channelOfTheUser);
         }
 
+        [RequireBotToBeInAVoiceChannel(ErrorMessage = "Bot should be in a voice channel. Consider using `join` command.")]
+        [RequireUserAndBotToBeInTheSameVoiceChannel(ErrorMessage = "You must be in the same channel as the bot")]
         [Command("Play")]
+        [Alias("Add")]
         public async Task Play(params string[] query)
         {
+            var voiceChannel = (Context.User as IVoiceState)?.VoiceChannel;
             if (query.Length == 0)
             {
                 await ReplyAsync(
@@ -65,25 +69,100 @@ namespace _5HeadBot.Modules.Public
                 );
                 return;
             }
-            var reply = await MusicService.PlayAsync(string.Join(" ", query), Context.Guild);
-            if (reply is null) 
+            
+            var addedTrack = await _musicService.PlayAsync(string.Join(" ", query), voiceChannel);
+            var inQueueCount = (await _musicService.GetQueueAsync(voiceChannel)).Count();
+            
+            // no such track found
+            if (addedTrack is null)
             {
                 await ReplyAsync(
                     new BotMessageBuilder()
-                    .WithEmbedWithTitle(
-                        "No music player found\n" +
-                        "Consider using `join` command.")
+                    .WithEmbedWithTitle("No such track found")
                     .WithDisplayType(BotMessageStyle.Warning)
                 );
                 return;
             }
-            await ReplyAsync(reply);
+
+            if(inQueueCount > 0)
+            {
+                await ReplyAsync(
+                    addedTrack
+                    .AsBotMessageBuilder()
+                    .WithText("Enqueued:")
+                    .WithDisplayType(BotMessageStyle.Success)
+                    .WithEmbedWithFooter(new EmbedFooterBuilder().WithText($"Tracks in the queue: {inQueueCount}"))
+                );
+                return;
+            }
+
+            await ReplyAsync(
+                addedTrack
+                .AsBotMessageBuilder()
+                .WithText("Now playing:")
+                .WithDisplayType(BotMessageStyle.Success)
+            );
         }
 
+        [RequireBotToBeInAVoiceChannel(ErrorMessage = "Bot should be in a voice channel. Consider using `join` command.")]
+        [RequireUserAndBotToBeInTheSameVoiceChannel(ErrorMessage = "You must be in the same channel as the bot")]
         [Command("Skip")]
         public async Task Skip()
         {
-            await ReplyAsync(await MusicService.SkipAsync(Context.Guild));
+            var voiceChannel = (Context.User as IVoiceState)?.VoiceChannel;
+            var skippedTrack = await _musicService.SkipAsync(voiceChannel);
+            if(skippedTrack is null)
+            {
+                await ReplyAsync(
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle("Can't skip - no more tracks left.")
+                    .WithDisplayType(BotMessageStyle.Info)
+                );
+                return;
+            }
+
+            await ReplyAsync(
+                skippedTrack
+                .AsBotMessageBuilder()
+                .WithText("Skipped:")
+                .WithDisplayType(BotMessageStyle.Success)
+            );
+
+            var nowPlaying = await _musicService.GetCurrentAsync(voiceChannel);
+            if (nowPlaying != null)
+            {
+                await ReplyAsync(
+                    nowPlaying
+                    .AsBotMessageBuilder()
+                    .WithText("Now playing:")
+                    .WithDisplayType(BotMessageStyle.Success)
+                );
+            }
+        }
+
+        [RequireBotToBeInAVoiceChannel(ErrorMessage = "Bot should be in a voice channel. Consider using `join` command.")]
+        [Alias("Current", "Now", "Playing")]
+        [Command("Track")]
+        public async Task CurrentTrack()
+        {
+            var voiceChannel = (Context.User as IVoiceState)?.VoiceChannel;
+            var track = await _musicService.GetCurrentAsync(voiceChannel);
+            if(track is null)
+            {
+                await ReplyAsync(
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle("Nothing playing.")
+                    .WithDisplayType(BotMessageStyle.Info)
+                );
+                return;
+            }
+
+            await ReplyAsync(
+                (await _musicService.GetCurrentAsync(voiceChannel))
+                .AsBotMessageBuilder()
+                .WithText("Now playing:")
+                .WithDisplayType(BotMessageStyle.Success)
+            );
         }
     }
 }
