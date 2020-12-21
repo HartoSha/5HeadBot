@@ -19,25 +19,25 @@ namespace _5HeadBot.Modules.Public
         [Alias("Шутка", "Шутку", "meme", "gimme")]
         public async Task GetMeme()
         {
-            var memeResp = await _memes.GetMemeAsync();
+            var meme = await _memes.GetMemeAsync();
 
-            if (memeResp.ErrorMessage != null)
-                await ReplyAsync(
-                    new BotMessageBuilder()
-                    .WithEmbedWithTitle(memeResp.ErrorMessage)
-                    .WithDisplayType(BotMessageStyle.Error)
-                );
-
-            else
+            if(meme is null)
             {
                 await ReplyAsync(
                     new BotMessageBuilder()
-                    .WithEmbedWithTitle(memeResp.Meme.Title)
-                    .WithEmbedWithUrl(memeResp.Meme.SourceUrl)
-                    .WithEmbedWithImageUrl(memeResp.Meme.ContentUrl)
-                    .WithDisplayType(BotMessageStyle.Success)
+                    .WithEmbedWithTitle("No memes left for today =(")
+                    .WithDisplayType(BotMessageStyle.Error)
                 );
+                return;
             }
+
+            await ReplyAsync(
+                new BotMessageBuilder()
+                .WithEmbedWithTitle(meme.Title)
+                .WithEmbedWithUrl(meme.SourceUrl)
+                .WithEmbedWithImageUrl(meme.ContentUrl)
+                .WithDisplayType(BotMessageStyle.Success)
+            );
         }
     }
 }

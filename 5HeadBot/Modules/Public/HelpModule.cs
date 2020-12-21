@@ -18,7 +18,7 @@ namespace _5HeadBot.Modules.Public
         }
 
         // Get list of all avaliable commands
-        [Command("help")]
+        [Command("help", RunMode = RunMode.Async)]
         [Summary("Returns list of all commands")]
         [Alias("команды")]
         public async Task Help()

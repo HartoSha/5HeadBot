@@ -7,5 +7,6 @@
         Warning,
         Error,
         Exception,
+        Info,
     }
 }
