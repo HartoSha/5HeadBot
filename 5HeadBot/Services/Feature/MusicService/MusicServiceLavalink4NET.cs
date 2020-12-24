@@ -15,10 +15,7 @@ namespace _5HeadBot.Services.Feature.MusicService
         public MusicServiceLavalink4NET(IAudioService audio, DiscordSocketClient discord)
         {
             _audio = audio;
-            discord.Ready += async () =>
-            {
-                await _audio.InitializeAsync();
-            };
+            discord.Connected += async () => await _audio.InitializeAsync();
         }
         public async Task JoinAsync(IVoiceChannel channel)
         {
@@ -38,16 +35,12 @@ namespace _5HeadBot.Services.Feature.MusicService
                 return null;
 
             var foundTrack = await SearchForTrackAsync(query);
-            if (foundTrack is null) 
+            if (foundTrack is null)
                 return null;
 
             var player = await GetPlayerAsync(voiceChannel);
+            await player.PlayAsync(foundTrack, enqueue);
             
-            if (enqueue)
-                await player.PlayTopAsync(foundTrack);
-            else
-                await player.PlayAsync(foundTrack);
-
             return foundTrack.AsMusicTrackInfo();
         }
 

@@ -2,6 +2,7 @@
 using PuppeteerSharp;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace _5HeadBot.Services.Core.NetworkService
@@ -15,7 +16,7 @@ namespace _5HeadBot.Services.Core.NetworkService
     {
         private Browser _browser;
         private Browser ConnectedBrowser
-            => _browser.IsConnected ? _browser : throw new Exception("Browser is not connected");
+            => _browser != null && _browser.IsConnected ? _browser : throw new Exception("Browser is not connected");
 
         private HttpClient _httpClient = new HttpClient();
 
@@ -24,15 +25,20 @@ namespace _5HeadBot.Services.Core.NetworkService
         {
             _config = config;
         }
-        public async Task InitializeAsync()
+        public Task InitializeAsync()
         {
-            await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-            _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            // download and launch the browser in a background
+            new Thread(async () =>
             {
-                Headless = true,
-                DefaultViewport = new ViewPortOptions() { Width = 1920, Height = 1080 },
-                Args = new string[] { "--no-sandbox", "--disable-setuid-sandbox" }
-            });
+                await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
+                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                {
+                    Headless = true,
+                    DefaultViewport = new ViewPortOptions() { Width = 1920, Height = 1080 },
+                    Args = new string[] { "--no-sandbox", "--disable-setuid-sandbox" }
+                });
+            }).Start();
+            return Task.CompletedTask;
         }
 
         /// <summary>

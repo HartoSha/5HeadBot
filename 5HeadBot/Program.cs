@@ -83,9 +83,15 @@ namespace _5HeadBot
                     {
                         Scheme = "http",
                         Host = Environment.GetEnvironmentVariable("LAVALINK_HOSTNAME") ?? "localhost",
-                        Port = Environment.GetEnvironmentVariable("LAVALINK_PORT") is null ? 8080 : ushort.Parse(Environment.GetEnvironmentVariable("LAVALINK_PORT")),
+                        Port = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LAVALINK_PORT")) ? 8080 : int.Parse(Environment.GetEnvironmentVariable("LAVALINK_PORT")),
                     }.ToString(),
-                    Password = Environment.GetEnvironmentVariable("LAVALINK_PASSWORD") ?? "youshallnotpass"
+                    WebSocketUri = new UriBuilder()
+                    {
+                        Scheme = "ws",
+                        Host = Environment.GetEnvironmentVariable("LAVALINK_HOSTNAME") ?? "localhost",
+                        Port = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LAVALINK_PORT")) ? 8080 : int.Parse(Environment.GetEnvironmentVariable("LAVALINK_PORT")),
+                    }.ToString(),
+                    Password = Environment.GetEnvironmentVariable("LAVALINK_PASSWORD") ?? "youshallnotpass",
                 })
                 .AddSingleton<Lavalink4NET.Logging.ILogger, Lavalink4NETLogger>()
                 // Lavalink4Net ends
