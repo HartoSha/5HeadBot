@@ -5,6 +5,7 @@ using _5HeadBot.Services.Feature;
 using _5HeadBot.Services.Feature.PictureService;
 using Discord;
 using Discord.Commands;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,11 +16,28 @@ namespace _5HeadBot.Modules.Public
     {
         public PictureService PictureService { get; set; }
         public SearchService SearchService { get; set; }
-        public CommandService Commands { get; set; }
 
         [Command("ping")]
-        public Task PingAsync()
-            => ReplyAsync("pong!");
+        public async Task PingAsync()
+        {
+            var messageCreatedDate = Context.Message.CreatedAt.ToLocalTime();
+            var now = DateTimeOffset.Now;
+
+            var pingMs = now.Subtract(messageCreatedDate).TotalMilliseconds;
+
+            var messageBuilder = new BotMessageBuilder();
+            messageBuilder.WithEmbedWithTitle($":satellite: Bot's ping is {pingMs.ToString(".##")} ms");
+            Color messageColor = Color.Red;
+            if (pingMs <= 500)
+                messageColor = Color.Green;
+            else if (pingMs <= 700)
+                messageColor = Color.DarkGreen;
+            else if (pingMs <= 1000)
+                messageColor = Color.Orange;
+            messageBuilder.WithEmbedColor(messageColor);
+
+            await ReplyAsync(messageBuilder);
+        }
 
         [Command("cat", RunMode = RunMode.Async)]
         [Alias("кот")]
@@ -43,12 +61,6 @@ namespace _5HeadBot.Modules.Public
         public Task EchoAsync([Remainder] string text)
             // Insert a ZWSP before the text to prevent triggering other bots!
             => ReplyAsync('\u200B' + text);
-
-        // Setting a custom ErrorMessage property will help clarify the precondition error
-        [Command("guild_only")]
-        [RequireContext(ContextType.Guild, ErrorMessage = "Sorry, this command must be ran from within a server, not a DM!")]
-        public Task GuildOnlyCommand()
-            => ReplyAsync("Nothing to see here!");
 
         // Search for something
         [Command("Search", RunMode = RunMode.Async)]
