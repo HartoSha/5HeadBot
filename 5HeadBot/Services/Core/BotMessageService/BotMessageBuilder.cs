@@ -5,37 +5,6 @@ using System.Collections.Generic;
 
 namespace _5HeadBot.Services.Core.BotMessageService
 {
-    // I don't add this 'BotMessageBuilder' to my dependency injection container
-    // because this builder never gonna change and thus also doesn't have an interface.
-    // This practice also used with Discord.Net EmbedBuilder my class build upon;
-
-    // But the most important reason, is that following code will not work as it's intended to
-    /*
-     * //some injection configuration 
-     * ...
-     * ServiceCollection().AddTransient<EmbedBuilder>();
-     * ...
-     * class C 
-     * {
-     *    // actual injection
-     *    EmbedBuilder b  { get; set; }
-     * 
-     *    someMethod() 
-     *    {
-     *        for (int i = 0; i < 2; i++)
-     *        {
-     *            // as I expected, b should be created on each it's call
-     *            b.WithFields(new List<EmbedFieldBuilder>() { new EmbedFieldBuilder().WithName("what1").WithValue("what1") });
-     *            
-     *            // but in reality, it's not! The line above creates it and the lines below mutate it. Like if b would be injected as Scoped.
-     *            // at the end of the loop, b contains all the fields added from the loop and that is totally wrong and unexpected.
-     *            await ReplyAsync(embed: b.WithTitle("onlyThisShoulBeMessagedButItIsNotOnlyItInReality").Build());
-     *            
-     *            b.WithFields(new List<EmbedFieldBuilder>() { new EmbedFieldBuilder().WithName("what2").WithValue("what2") })
-     *        }
-     *    }
-     * }
-     */
     public class BotMessageBuilder
     {
         private EmbedBuilder EmbedBuilderInstance;
