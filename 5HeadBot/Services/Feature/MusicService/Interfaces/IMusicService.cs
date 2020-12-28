@@ -39,5 +39,10 @@ namespace _5HeadBot.Services.Feature.MusicService
         /// </summary>
         /// <returns>Skipped track or <see langword="null"/></returns>
         Task<MusicTrackInfo> SkipAsync(IVoiceChannel voiceChannel);
+
+        /// <summary>
+        /// Sets player's <paramref name="volume"/> in a <paramref name="voiceChannel"/>
+        /// </summary>
+        Task SetVolumeAsync(IVoiceChannel voiceChannel, float volume);
     }
 }

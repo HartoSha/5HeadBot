@@ -164,5 +164,30 @@ namespace _5HeadBot.Modules.Public
                 .WithDisplayType(BotMessageStyle.Success)
             );
         }
+
+        [RequireBotToBeInAVoiceChannel(ErrorMessage = "Bot should be in a voice channel. Consider using `join` command.")]
+        [RequireUserAndBotToBeInTheSameVoiceChannel(ErrorMessage = "You must be in the same channel as the bot")]
+        [Command("Volume")]
+        public async Task SetVolume(string volume = "100")
+        {
+            if (!int.TryParse(volume, out int volumeIntValue))
+            {
+                await ReplyAsync(
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle("The volume must be a number between 0 and 100.")
+                    .WithDisplayType(BotMessageStyle.Warning)
+                );
+                return;
+            }
+
+            var voiceChannel = (Context.User as IVoiceState)?.VoiceChannel;
+            await _musicService.SetVolumeAsync(voiceChannel, volumeIntValue / 100f);
+
+            await ReplyAsync(
+                new BotMessageBuilder()
+                .WithEmbedWithTitle($"Volume is set to {volumeIntValue}.")
+                .WithDisplayType(BotMessageStyle.Info)
+            );
+        }
     }
 }

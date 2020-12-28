@@ -31,17 +31,15 @@ namespace _5HeadBot.Services.Feature.MusicService
 
         public async Task<MusicTrackInfo> PlayAsync(string query, IVoiceChannel voiceChannel, bool enqueue = true)
         {
-            if (voiceChannel is null) 
-                return null;
-
             var foundTrack = await SearchForTrackAsync(query);
             if (foundTrack is null)
                 return null;
 
             var player = await GetPlayerAsync(voiceChannel);
+
             await player.PlayAsync(foundTrack, enqueue);
             
-            return foundTrack.AsMusicTrackInfo();
+            return foundTrack?.AsMusicTrackInfo();
         }
 
         public async Task<MusicTrackInfo> GetCurrentAsync(IVoiceChannel voiceChannel)
@@ -66,6 +64,12 @@ namespace _5HeadBot.Services.Feature.MusicService
             MusicTrackInfo skipedTrack = player?.CurrentTrack?.AsMusicTrackInfo();
             await player.SkipAsync();
             return skipedTrack;
+        }
+        public async Task SetVolumeAsync(IVoiceChannel voiceChannel, float volume)
+        {
+            var player = await GetPlayerAsync(voiceChannel);
+            if (player is null) return;
+            await player.SetVolumeAsync(volume);
         }
         private async Task<VoteLavalinkPlayer> GetPlayerAsync(IVoiceChannel channel, bool shouldJoin = false)
         {
