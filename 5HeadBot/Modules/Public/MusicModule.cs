@@ -125,6 +125,7 @@ namespace _5HeadBot.Modules.Public
                 skippedTrack
                 .AsBotMessageBuilder()
                 .WithText("Skipped:")
+                .WithEmbedDescription(skippedTrack.AsTimelineString())
                 .WithDisplayType(BotMessageStyle.Success)
             );
 
@@ -161,6 +162,7 @@ namespace _5HeadBot.Modules.Public
                 (await _musicService.GetCurrentAsync(voiceChannel))
                 .AsBotMessageBuilder()
                 .WithText("Now playing:")
+                .WithEmbedDescription(track.AsTimelineString())
                 .WithDisplayType(BotMessageStyle.Success)
             );
         }
@@ -185,7 +187,12 @@ namespace _5HeadBot.Modules.Public
 
             await ReplyAsync(
                 new BotMessageBuilder()
-                .WithEmbedWithTitle($"Volume is set to {volumeIntValue}.")
+                .WithEmbedWithTitle(
+                    // if volume is 0 or below show :mute:
+                    // if between 0 and 100 show :speaker:
+                    // if above 100 show :speaker: :boom:
+                    $"{(volumeIntValue <= 0 ? ":mute:" : $":speaker: {(volumeIntValue > 100 ? ":boom:" : "")}")} " +
+                    $"Volume is set to {volumeIntValue}.")
                 .WithDisplayType(BotMessageStyle.Info)
             );
         }

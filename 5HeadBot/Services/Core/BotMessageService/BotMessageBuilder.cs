@@ -28,9 +28,9 @@ namespace _5HeadBot.Services.Core.BotMessageService
         }
 
         #region EmbedBuilder interface copy
-        public BotMessageBuilder WithEmbedAuthor(string author)
+        public BotMessageBuilder WithEmbedAuthor(string author, string iconUrl = null, string url = null)
         {
-            EmbedBuilder.WithAuthor(author);
+            EmbedBuilder.WithAuthor(author, iconUrl, url);
             return this;
         }
 

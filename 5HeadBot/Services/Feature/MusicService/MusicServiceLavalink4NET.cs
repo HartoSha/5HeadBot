@@ -36,7 +36,6 @@ namespace _5HeadBot.Services.Feature.MusicService
                 return null;
 
             var player = await GetPlayerAsync(voiceChannel);
-
             await player.PlayAsync(foundTrack, enqueue);
             
             return foundTrack?.AsMusicTrackInfo();
@@ -45,7 +44,8 @@ namespace _5HeadBot.Services.Feature.MusicService
         public async Task<MusicTrackInfo> GetCurrentAsync(IVoiceChannel voiceChannel)
         {
             var player = await GetPlayerAsync(voiceChannel);
-            return player?.CurrentTrack?.AsMusicTrackInfo();
+            var current = player?.CurrentTrack?.WithPosition(player.TrackPosition);
+            return current?.AsMusicTrackInfo();
         }
 
         public async Task<IImmutableQueue<MusicTrackInfo>> GetQueueAsync(IVoiceChannel voiceChannel)
@@ -61,7 +61,8 @@ namespace _5HeadBot.Services.Feature.MusicService
         public async Task<MusicTrackInfo> SkipAsync(IVoiceChannel voiceChannel)
         {
             var player = await GetPlayerAsync(voiceChannel);
-            MusicTrackInfo skipedTrack = player?.CurrentTrack?.AsMusicTrackInfo();
+            MusicTrackInfo skipedTrack = 
+                player?.CurrentTrack?.WithPosition(player.TrackPosition)?.AsMusicTrackInfo();
             await player.SkipAsync();
             return skipedTrack;
         }
@@ -76,12 +77,10 @@ namespace _5HeadBot.Services.Feature.MusicService
             if (channel is null)
                 return null;
 
-            VoteLavalinkPlayer player;
+            VoteLavalinkPlayer player = _audio.GetPlayer<VoteLavalinkPlayer>(channel.GuildId);
 
             if (shouldJoin)
                 player = await _audio.JoinAsync<VoteLavalinkPlayer>(channel.GuildId, channel.Id);
-            else
-                player = _audio.GetPlayer<VoteLavalinkPlayer>(channel.GuildId);
 
             return player;
         }
