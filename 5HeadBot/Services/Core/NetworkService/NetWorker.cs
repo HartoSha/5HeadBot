@@ -71,7 +71,6 @@ namespace _5HeadBot.Services.Core.NetworkService
         {
             if (useBrowserEmulation)
                 return await GetUsingBrowserPage(url);
-
             else
                 return await _httpClient.GetAsync(url);
         }

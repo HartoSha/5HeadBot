@@ -31,9 +31,6 @@ namespace _5HeadBot.Services.Feature.MusicService
 
         public async Task<MusicTrackInfo> PlayAsync(string query, IVoiceChannel voiceChannel, bool enqueue = true)
         {
-            if (voiceChannel is null) 
-                return null;
-
             var foundTrack = await SearchForTrackAsync(query);
             if (foundTrack is null)
                 return null;
@@ -41,13 +38,14 @@ namespace _5HeadBot.Services.Feature.MusicService
             var player = await GetPlayerAsync(voiceChannel);
             await player.PlayAsync(foundTrack, enqueue);
             
-            return foundTrack.AsMusicTrackInfo();
+            return foundTrack?.AsMusicTrackInfo();
         }
 
         public async Task<MusicTrackInfo> GetCurrentAsync(IVoiceChannel voiceChannel)
         {
             var player = await GetPlayerAsync(voiceChannel);
-            return player?.CurrentTrack?.AsMusicTrackInfo();
+            var current = player?.CurrentTrack?.WithPosition(player.TrackPosition);
+            return current?.AsMusicTrackInfo();
         }
 
         public async Task<IImmutableQueue<MusicTrackInfo>> GetQueueAsync(IVoiceChannel voiceChannel)
@@ -63,21 +61,26 @@ namespace _5HeadBot.Services.Feature.MusicService
         public async Task<MusicTrackInfo> SkipAsync(IVoiceChannel voiceChannel)
         {
             var player = await GetPlayerAsync(voiceChannel);
-            MusicTrackInfo skipedTrack = player?.CurrentTrack?.AsMusicTrackInfo();
+            MusicTrackInfo skipedTrack = 
+                player?.CurrentTrack?.WithPosition(player.TrackPosition)?.AsMusicTrackInfo();
             await player.SkipAsync();
             return skipedTrack;
+        }
+        public async Task SetVolumeAsync(IVoiceChannel voiceChannel, float volume)
+        {
+            var player = await GetPlayerAsync(voiceChannel);
+            if (player is null) return;
+            await player.SetVolumeAsync(volume);
         }
         private async Task<VoteLavalinkPlayer> GetPlayerAsync(IVoiceChannel channel, bool shouldJoin = false)
         {
             if (channel is null)
                 return null;
 
-            VoteLavalinkPlayer player;
+            VoteLavalinkPlayer player = _audio.GetPlayer<VoteLavalinkPlayer>(channel.GuildId);
 
             if (shouldJoin)
                 player = await _audio.JoinAsync<VoteLavalinkPlayer>(channel.GuildId, channel.Id);
-            else
-                player = _audio.GetPlayer<VoteLavalinkPlayer>(channel.GuildId);
 
             return player;
         }

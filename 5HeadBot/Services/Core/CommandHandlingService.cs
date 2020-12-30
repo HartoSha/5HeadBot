@@ -50,7 +50,10 @@ namespace _5HeadBot.Services.Core
 
             // if it's not a dm and no prefix provided
             if (!(rawMessage.Channel is IPrivateChannel) 
-                && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
+                && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)
+                // HasMentionPrefix doesn't accept messages with tags ended without a space char
+                // so use of HasStringPrefix allows to accept those messages
+                && !message.HasStringPrefix(_discord.CurrentUser.Mention, ref argPos)) return;
 
             var context = new SocketCommandContext(_discord, message);
             // Perform the execution of the command. In this method,

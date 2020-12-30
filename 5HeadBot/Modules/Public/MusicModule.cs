@@ -125,6 +125,7 @@ namespace _5HeadBot.Modules.Public
                 skippedTrack
                 .AsBotMessageBuilder()
                 .WithText("Skipped:")
+                .WithEmbedDescription(skippedTrack.AsTimelineString())
                 .WithDisplayType(BotMessageStyle.Success)
             );
 
@@ -161,7 +162,40 @@ namespace _5HeadBot.Modules.Public
                 (await _musicService.GetCurrentAsync(voiceChannel))
                 .AsBotMessageBuilder()
                 .WithText("Now playing:")
+                .WithEmbedDescription(track.AsTimelineString())
                 .WithDisplayType(BotMessageStyle.Success)
+            );
+        }
+
+        [RequireBotToBeInAVoiceChannel(ErrorMessage = "Bot should be in a voice channel. Consider using `join` command.")]
+        [RequireUserAndBotToBeInTheSameVoiceChannel(ErrorMessage = "You must be in the same channel as the bot")]
+        [Command("Volume")]
+        public async Task SetVolume(string volume = "100")
+        {
+            if (!int.TryParse(volume, out int volumeIntValue)
+                || volumeIntValue < 0
+                || volumeIntValue > 1000)
+            {
+                await ReplyAsync(
+                    new BotMessageBuilder()
+                    .WithEmbedWithTitle("The volume must be a number between 0 and 1000. Default is 100.")
+                    .WithDisplayType(BotMessageStyle.Warning)
+                );
+                return;
+            }
+
+            var voiceChannel = (Context.User as IVoiceState)?.VoiceChannel;
+            await _musicService.SetVolumeAsync(voiceChannel, volumeIntValue / 100f);
+
+            await ReplyAsync(
+                new BotMessageBuilder()
+                .WithEmbedWithTitle(
+                    // if volume is 0 or below show :mute:
+                    // if between 0 and 100 show :speaker:
+                    // if above 100 show :speaker: :boom:
+                    $"{(volumeIntValue <= 0 ? ":mute:" : $":speaker: {(volumeIntValue > 100 ? ":boom:" : "")}")} " +
+                    $"Volume is set to {volumeIntValue}.")
+                .WithDisplayType(BotMessageStyle.Info)
             );
         }
     }
