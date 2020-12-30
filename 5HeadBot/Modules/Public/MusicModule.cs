@@ -172,11 +172,13 @@ namespace _5HeadBot.Modules.Public
         [Command("Volume")]
         public async Task SetVolume(string volume = "100")
         {
-            if (!int.TryParse(volume, out int volumeIntValue))
+            if (!int.TryParse(volume, out int volumeIntValue)
+                || volumeIntValue < 0
+                || volumeIntValue > 1000)
             {
                 await ReplyAsync(
                     new BotMessageBuilder()
-                    .WithEmbedWithTitle("The volume must be a number between 0 and 100.")
+                    .WithEmbedWithTitle("The volume must be a number between 0 and 1000. Default is 100.")
                     .WithDisplayType(BotMessageStyle.Warning)
                 );
                 return;
