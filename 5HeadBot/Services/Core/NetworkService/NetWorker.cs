@@ -65,14 +65,25 @@ namespace _5HeadBot.Services.Core.NetworkService
         }
 
         /// <summary>
+        /// Allows only one thread to process <see cref="GetAsync(string, bool)"/> to avoid "The operation has timed out" exception.
+        /// </summary>
+        private SemaphoreSlim _gate = new SemaphoreSlim(1);
+
+        /// <summary>
         /// Gets <see cref="HttpResponseMessage"/> from an url by chosen way
         /// </summary>
         public async Task<HttpResponseMessage> GetAsync(string url, bool useBrowserEmulation = false)
         {
+            await _gate.WaitAsync();
+            HttpResponseMessage result;
+
             if (useBrowserEmulation)
-                return await GetUsingBrowserPage(url);
+                result = await GetUsingBrowserPage(url);
             else
-                return await _httpClient.GetAsync(url);
+                result = await _httpClient.GetAsync(url);
+
+            _gate.Release();
+            return result;
         }
 
         /// <summary>
